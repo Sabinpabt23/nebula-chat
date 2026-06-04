@@ -1,11 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
-import { HttpException } from '@exceptions/HttpException';
-import { logger } from '@utils/logger.util';
+import { HttpException } from '../exceptions/HttpException';
+import { logger } from '../utils/logger.util';
 
 export class ErrorMiddleware {
     static handle(error: Error, req: Request, res: Response, _next: NextFunction): void {
-        // Log the error
         logger.error('Error occurred', {
             error: error.message,
             stack: error.stack,
@@ -14,7 +13,6 @@ export class ErrorMiddleware {
             ip: req.ip,
         });
 
-        // Handle known HTTP exceptions
         if (error instanceof HttpException) {
             res.status(error.statusCode).json({
                 success: false,
@@ -29,7 +27,6 @@ export class ErrorMiddleware {
             return;
         }
 
-        // Handle Zod validation errors
         if (error instanceof ZodError) {
             const details = error.issues.map((issue) => ({
                 field: issue.path.join('.'),
@@ -48,7 +45,6 @@ export class ErrorMiddleware {
             return;
         }
 
-        // Handle unknown errors
         const isProduction = process.env.NODE_ENV === 'production';
         res.status(500).json({
             success: false,
