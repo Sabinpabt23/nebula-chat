@@ -34,3 +34,8 @@ src/migrations/*.js
 
 # Docker (override may have local secrets)
 docker-compose.override.yml
+
+# Project documentation (blueprint, status, decisions)
+CLAUDE.md
+STATUS.md
+DECISION.md
