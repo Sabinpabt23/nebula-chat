@@ -25,5 +25,8 @@
   "license": "ISC",
   "dependencies": {
     "google-auth-library": "^10.7.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6"
   }
 }
