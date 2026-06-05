@@ -1,5 +1,6 @@
-import jwt, { SignOptions } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { env } from '../config/env.config';
+import { UnauthorizedException } from '../exceptions/UnauthorizedException';
 
 interface AccessTokenPayload {
     userId: string;
@@ -22,21 +23,37 @@ class JwtUtil {
     }
 
     signAccessToken(payload: AccessTokenPayload): string {
-        const options: SignOptions = { expiresIn: env.jwt.accessExpiry as any };
-        return jwt.sign(payload as object, this.accessSecret, options);
+        return jwt.sign(payload as object, this.accessSecret, {
+            expiresIn: env.jwt.accessExpiry as any,
+        });
     }
 
     signRefreshToken(payload: RefreshTokenPayload): string {
-        const options: SignOptions = { expiresIn: env.jwt.refreshExpiry as any };
-        return jwt.sign(payload as object, this.refreshSecret, options);
+        return jwt.sign(payload as object, this.refreshSecret, {
+            expiresIn: env.jwt.refreshExpiry as any,
+        });
     }
 
     verifyAccessToken(token: string): AccessTokenPayload {
-        return jwt.verify(token, this.accessSecret) as AccessTokenPayload;
+        try {
+            return jwt.verify(token, this.accessSecret) as AccessTokenPayload;
+        } catch (error: any) {
+            if (error.name === 'TokenExpiredError') {
+                throw new UnauthorizedException('Access token has expired');
+            }
+            throw new UnauthorizedException('Invalid access token');
+        }
     }
 
     verifyRefreshToken(token: string): RefreshTokenPayload {
-        return jwt.verify(token, this.refreshSecret) as RefreshTokenPayload;
+        try {
+            return jwt.verify(token, this.refreshSecret) as RefreshTokenPayload;
+        } catch (error: any) {
+            if (error.name === 'TokenExpiredError') {
+                throw new UnauthorizedException('Refresh token has expired');
+            }
+            throw new UnauthorizedException('Invalid refresh token');
+        }
     }
 }
 
