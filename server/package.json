@@ -15,7 +15,15 @@
     "lint:fix": "eslint src/**/*.ts --fix",
     "format": "prettier --write \"src/**/*.ts\""
   },
-  "keywords": ["chat", "realtime", "socket.io", "typescript"],
+  "keywords": [
+    "chat",
+    "realtime",
+    "socket.io",
+    "typescript"
+  ],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "google-auth-library": "^10.7.0"
+  }
 }
