@@ -8,6 +8,7 @@ import { env } from './config/env.config';
 import { initializeDatabase } from './config/database.config';
 import { ErrorMiddleware } from './middleware/error.middleware';
 import { logger } from './utils/logger.util';
+import routes from './routes/index';
 
 class App {
     public app: Application;
@@ -53,6 +54,7 @@ class App {
         this.app.use(express.urlencoded({ extended: true, limit: '10mb' }));
         this.app.use(cookieParser());
         this.app.set('trust proxy', 1);
+        
 
         this.app.get('/health', (_req, res) => {
             res.status(200).json({
@@ -62,6 +64,9 @@ class App {
                 environment: env.nodeEnv,
             });
         });
+
+        // API routes
+        this.app.use('/api/v1', routes);
     }
 
     private initializeErrorHandling(): void {
