@@ -9,6 +9,8 @@ import { initializeDatabase } from './config/database.config';
 import { ErrorMiddleware } from './middleware/error.middleware';
 import { logger } from './utils/logger.util';
 import routes from './routes/index';
+import { SocketManager } from './socket/SocketManager';
+import { createServer } from 'http';
 
 class App {
     public app: Application;
@@ -86,21 +88,25 @@ class App {
     }
 
     public async start(): Promise<void> {
-        try {
-            await initializeDatabase();
+    try {
+        await initializeDatabase();
 
-            const server = this.app.listen(this.port, () => {
-                logger.info(`Nebula Chat server running on port ${this.port}`);
-                logger.info(`Environment: ${env.nodeEnv}`);
-                logger.info(`Health check: http://localhost:${this.port}/health`);
-            });
+        const httpServer = createServer(this.app);
+        SocketManager.getInstance(httpServer);
 
-            this.handleShutdown(server);
-        } catch (error) {
-            logger.error('Failed to start server', error);
-            process.exit(1);
-        }
+        httpServer.listen(this.port, () => {
+            logger.info(`Nebula Chat server running on port ${this.port}`);
+            logger.info(`Environment: ${env.nodeEnv}`);
+            logger.info(`Health check: http://localhost:${this.port}/health`);
+            logger.info('Socket.IO server initialized');
+        });
+
+        this.handleShutdown(httpServer);
+    } catch (error) {
+        logger.error('Failed to start server', error);
+        process.exit(1);
     }
+}
 
     private handleShutdown(server: any): void {
         const shutdown = async (signal: string) => {
