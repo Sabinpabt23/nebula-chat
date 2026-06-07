@@ -24,7 +24,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "google-auth-library": "^10.7.0"
+    "google-auth-library": "^10.7.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/express": "^5.0.6"
