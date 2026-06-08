@@ -44,5 +44,12 @@ export function useAuth() {
         clearAuth();
     }, [clearAuth]);
 
-    return { sendOtp, verifyOtp, googleLogin, logout };
+    const triggerGoogleLogin = useCallback(async (): Promise<void> => {
+    // Open Google OAuth popup, get credential, then call the API
+    // This keeps popup logic out of the UI component
+    throw new Error('Google login not yet configured. Set VITE_GOOGLE_CLIENT_ID in .env');
+     }, [googleLogin]);
+
+    return { sendOtp, verifyOtp, triggerGoogleLogin, logout };
+
 }
