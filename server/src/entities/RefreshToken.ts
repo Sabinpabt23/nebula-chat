@@ -1,3 +1,22 @@
+/**
+ * Refresh Token Entity
+ * * Database model representing long-lived cryptographic session tokens issued to clients.
+ * It tracks valid active user sessions and supports explicit session revocation, security audits,
+ * and standard token-rotation mechanics.
+ * * Inherited Fields:
+ * - id (UUID), createdAt (TIMESTAMPTZ), updatedAt (TIMESTAMPTZ) via {@link BaseEntity}
+ * * Fields:
+ * - userId     (UUID)        — Foreign key identifying the account owner of this session
+ * - tokenJti   (VARCHAR)     — Unique "JWT ID" identifier used to track, rotate, or match a specific cryptographic signature
+ * - deviceInfo (VARCHAR)     — Client metadata string (e.g., Browser/OS) captured for user session transparency (nullable)
+ * - ipAddress  (INET)        — Postgres-native network address tracking the device's last active IP location (nullable)
+ * - expiresAt  (TIMESTAMPTZ) — Expiration boundary matching the JWT payload's exp claim
+ * - isRevoked  (BOOLEAN)     — Blacklist flag to immediately terminate a session before its natural expiration
+ * * Relationships & Performance:
+ * - ManyToOne (user)         — Links back to the targeted User entity (Indexed for rapid user-session lookups)
+ * - Cascade Deletion         — Automatically wipes out downstream active session keys if the parent User account is deleted
+ */
+
 import { Entity, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { BaseEntity } from './BaseEntity';
 import { User } from './User';

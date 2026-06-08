@@ -1,12 +1,23 @@
+/**
+ * Auth Service
+ * 
+ * Orchestrates authentication flows: OTP login, Google OAuth, and token refresh.
+ * Coordinates between TokenService, OtpService, and UserRepository.
+ * 
+ * Security:
+ * - Google ID tokens are verified with audience validation against our client ID
+ * - Refresh tokens are rotated on each use (old token revoked, new pair issued)
+ * - Users are auto-created on first OTP or Google login
+ */
 import { OAuth2Client } from 'google-auth-library';
 import { TokenService } from './TokenService';
 import { OtpService } from './OtpService';
 import { UserRepository } from '../repositories/UserRepository';
 import { User } from '../entities/User';
+import { jwtUtil } from '../utils/jwt.util';
 import { env } from '../config/env.config';
 import { UnauthorizedException } from '../exceptions/index';
 import { logger } from '../utils/logger.util';
-import { jwtUtil } from '../utils/jwt.util';
 
 interface AuthTokens {
     accessToken: string;
@@ -17,6 +28,11 @@ interface AuthTokens {
         displayName: string;
         avatarUrl: string | null;
     };
+}
+
+interface AccessTokenPayload {
+    userId: string;
+    email: string;
 }
 
 export class AuthService {
@@ -55,6 +71,7 @@ export class AuthService {
     async googleLogin(credential: string): Promise<AuthTokens> {
         const ticket = await this.googleClient.verifyIdToken({
             idToken: credential,
+            audience: env.google.clientId,
         });
 
         const payload = ticket.getPayload();
@@ -68,12 +85,13 @@ export class AuthService {
         let user = await this.userRepository.findByGoogleId(googleId);
 
         if (!user) {
-            user = await this.userRepository.findByEmail(email!);
+            const existingUser = await this.userRepository.findByEmail(email!);
 
-            if (user) {
-                user.googleId = googleId;
-                user.avatarUrl = user.avatarUrl || picture || null;
-                await this.userRepository.update(user.id, user as any);
+            if (existingUser) {
+                existingUser.googleId = googleId;
+                existingUser.avatarUrl = existingUser.avatarUrl || picture || null;
+                user = await this.userRepository.update(existingUser.id, existingUser as any);
+                logger.info(`Existing user ${user.id} linked with Google OAuth (${email})`);
             } else {
                 user = await this.userRepository.create({
                     email: email!,
@@ -81,9 +99,8 @@ export class AuthService {
                     avatarUrl: picture || null,
                     googleId,
                 } as User);
+                logger.info(`New user ${user.id} created via Google OAuth (${email})`);
             }
-
-            logger.info(`User ${user.id} linked with Google OAuth (${email})`);
         }
 
         const tokens = await this.tokenService.generateTokenPair(user);
@@ -99,21 +116,21 @@ export class AuthService {
         };
     }
 
-async refreshToken(oldRefreshToken: string): Promise<AuthTokens> {
-    const tokens = await this.tokenService.refreshAccessToken(oldRefreshToken);
-    const payload = jwtUtil.verifyAccessToken(tokens.accessToken);
-    const user = await this.userRepository.findByIdOrFail(payload.userId);
+    async refreshToken(oldRefreshToken: string): Promise<AuthTokens> {
+        const tokens = await this.tokenService.refreshAccessToken(oldRefreshToken);
+        const payload = jwtUtil.verifyAccessToken(tokens.accessToken) as AccessTokenPayload;
+        const user = await this.userRepository.findByIdOrFail(payload.userId);
 
-    return {
-        ...tokens,
-        user: {
-            id: user.id,
-            email: user.email,
-            displayName: user.displayName,
-            avatarUrl: user.avatarUrl,
-        },
-    };
-}
+        return {
+            ...tokens,
+            user: {
+                id: user.id,
+                email: user.email,
+                displayName: user.displayName,
+                avatarUrl: user.avatarUrl,
+            },
+        };
+    }
 
     async logout(refreshToken: string): Promise<void> {
         await this.tokenService.revokeRefreshToken(refreshToken);

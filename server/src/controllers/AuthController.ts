@@ -1,3 +1,16 @@
+/**
+ * Authentication Controller
+ * * HTTP request handlers for authentication and session management endpoints.
+ * Intercepts HTTP requests, extracts payloads/cookies, routes them to the AuthService,
+ * and handles secure cookie issuance (refresh tokens) and standardized responses.
+ * * Endpoints:
+ * - POST   /auth/send-otp        — Request an OTP for email verification
+ * - POST   /auth/verify-otp      — Verify OTP, start session, issue tokens & cookie
+ * - POST   /auth/google-login    — Authenticate via Google OAuth credential token
+ * - POST   /auth/refresh-token   — Renew expired access tokens using HttpOnly refresh cookie
+ * - POST   /auth/logout          — Invalidate active session and clear client cookies
+ */
+
 import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '../services/AuthService';
 import { ResponseUtil } from '../utils/response.util';
@@ -21,7 +34,7 @@ export class AuthController {
             secure: env.cookie.secure,
             sameSite: 'strict',
             domain: env.cookie.domain,
-            maxAge: 7 * 24 * 60 * 60 * 1000,
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
         });
 
         ResponseUtil.success(res, {

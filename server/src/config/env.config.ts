@@ -1,8 +1,29 @@
+/**
+ * @fileoverview Centralized Environment Configuration Module
+ * @module config/env
+ * * @description
+ * This module is the single source of truth for application configuration. It loads 
+ * raw strings from `process.env` (via dotenv), parses them into proper types (numbers, booleans),
+ * and structures them into a strongly-typed, immutable `env` object.
+ * * @fail_fast_policy
+ * To prevent the application from running in a partially configured or unstable state,
+ * this file will intentionally throw a runtime error during the application boot phase 
+ * if any required environment variable is missing.
+ * * @developer_guide
+ * When adding a new environment variable:
+ * 1. Add its key and expected type to the `EnvConfig` interface.
+ * 2. Map it in the `env` export using `getEnvVar('KEY_NAME', isRequired)`.
+ * 3. Remember to update the root `.env.example` file for the team.
+ */
+
 import dotenv from 'dotenv';
 
-// Load .env file
+// Load .env file into process.env at runtime
 dotenv.config();
 
+/**
+ * Structural contract for the application's configuration layout.
+ */
 interface EnvConfig {
     nodeEnv: string;
     port: number;
@@ -47,6 +68,13 @@ interface EnvConfig {
     logLevel: string;
 }
 
+/**
+ * Helper utility to extract variables from process.env with integrated validation.
+ * * @param {string} key - The exact name of the environment variable.
+ * @param {boolean} [required=true] - If true, missing variables will halt application execution.
+ * @throws {Error} If `required` is true and the variable is missing/empty.
+ * @returns {string} The resolved environment value or an empty string.
+ */
 function getEnvVar(key: string, required = true): string {
     const value = process.env[key];
     if (!value && required) {
@@ -55,6 +83,10 @@ function getEnvVar(key: string, required = true): string {
     return value || '';
 }
 
+/**
+ * Frozen, type-safe application configuration instance.
+ * Consumed globally across the codebase instead of direct `process.env` lookups.
+ */
 export const env: EnvConfig = {
     nodeEnv: getEnvVar('NODE_ENV', false) || 'development',
     port: parseInt(getEnvVar('PORT', false) || '4000', 10),
