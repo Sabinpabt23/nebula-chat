@@ -11,15 +11,32 @@ export const ROUTES = {
     PROFILE: '/profile',
 } as const;
 
+
 export const SOCKET_EVENTS = {
-    USER_ONLINE: 'user:online',
-    USER_OFFLINE: 'user:offline',
+    // Connection
+    JOIN_CONVERSATION: 'join:conversation',
+    LEAVE_CONVERSATION: 'leave:conversation',
+
+    // Messages (outgoing)
+    MESSAGE_SEND: 'message:send',
+
+    // Messages (incoming)
     MESSAGE_NEW: 'message:new',
     MESSAGE_READ: 'message:read',
+
+    // Typing
     TYPING_START: 'typing:start',
     TYPING_STOP: 'typing:stop',
+
+    // Status
+    USER_ONLINE: 'user:online',
+    USER_OFFLINE: 'user:offline',
+
+    // Notifications
     NOTIFICATION: 'notification',
     UNREAD_COUNT: 'unread:count',
+
+    // Errors
     ERROR: 'error',
 } as const;
 
