@@ -1,0 +1,25 @@
+/**
+ * Global Styles
+ * 
+ * Tailwind CSS imports and base resets.
+ * No component-specific styles here — those go in components.
+ */
+@import "tailwindcss";
+
+:root {
+    --color-bg-base: #0d0d0f;
+    --color-bg-surface: #161618;
+    --color-bg-elevated: #1e1e21;
+    --color-accent: #6366f1;
+    --color-text-primary: #f0f0f2;
+    --color-text-secondary: #8a8a96;
+    --color-online: #22c55e;
+    --color-danger: #ef4444;
+}
+
+body {
+    margin: 0;
+    background-color: var(--color-bg-base);
+    color: var(--color-text-primary);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
