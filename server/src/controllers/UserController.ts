@@ -45,20 +45,20 @@ export class UserController {
         }, 'Profile updated successfully');
     };
 
-    searchUsers = async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
-        const { query, limit } = req.query as { query: string; limit?: string };
-        const users = await this.userService.searchUsers(query, limit ? parseInt(limit, 10) : 20);
+  searchUsers = async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+    const { query, limit } = (req as any).validatedQuery;
+    const users = await this.userService.searchUsers(query, limit || 20);
 
-        const results = users.map((user) => ({
-            id: user.id,
-            email: user.email,
-            displayName: user.displayName,
-            avatarUrl: user.avatarUrl,
-            isOnline: user.isOnline,
-        }));
+    const results = users.map((user) => ({
+        id: user.id,
+        email: user.email,
+        displayName: user.displayName,
+        avatarUrl: user.avatarUrl,
+        isOnline: user.isOnline,
+    }));
 
-        ResponseUtil.success(res, results, 'Users found');
-    };
+    ResponseUtil.success(res, results, 'Users found');
+};
 
     getUserStatus = async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
     const id = req.params.id as string;

@@ -1,3 +1,10 @@
+/**
+ * Email Utility
+ * 
+ * Handles transactional email delivery via nodemailer.
+ * Uses MailHog (no auth) in development, real SMTP with credentials in production.
+ * The transporter is configured once on startup; auth is skipped when credentials are empty.
+ */
 import nodemailer from 'nodemailer';
 import { env } from '../config/env.config';
 import { logger } from './logger.util';
@@ -6,15 +13,20 @@ class EmailUtil {
     private transporter: nodemailer.Transporter;
 
     constructor() {
-        this.transporter = nodemailer.createTransport({
+        const config: any = {
             host: env.email.host,
             port: env.email.port,
             secure: env.email.port === 465,
-            auth: {
+        };
+
+        if (env.email.user && env.email.pass) {
+            config.auth = {
                 user: env.email.user,
                 pass: env.email.pass,
-            },
-        });
+            };
+        }
+
+        this.transporter = nodemailer.createTransport(config);
     }
 
     async sendOtpEmail(email: string, otp: string): Promise<void> {
@@ -34,13 +46,8 @@ class EmailUtil {
             `,
         };
 
-        try {
-            await this.transporter.sendMail(mailOptions);
-            logger.info(`OTP email sent to ${email}`);
-        } catch (error) {
-            logger.error(`Failed to send OTP email to ${email}`, error);
-            throw error;
-        }
+        await this.transporter.sendMail(mailOptions);
+        logger.info(`OTP email sent to ${email}`);
     }
 }
 
