@@ -37,7 +37,7 @@ router.get('/conversations/:id/messages', (req, res, next) => {
     if (!result.success) {
         throw new BadRequestException('Validation failed', 'VALIDATION_ERROR', result.error.issues);
     }
-    req.query = result.data as any;
+    (req as any).validatedQuery = result.data;
     messageController.getMessages(req, res, next);
 });
 

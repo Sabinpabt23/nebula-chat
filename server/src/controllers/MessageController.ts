@@ -31,22 +31,23 @@ export class MessageController {
     };
 
     getMessages = async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
-        const userId = (req as any).user.userId;
-        const conversationId = req.params.id as string;
-        const page = parseInt((req.query.page as string) || String(PAGINATION.DEFAULT_PAGE), 10);
-        const limit = parseInt((req.query.limit as string) || String(PAGINATION.DEFAULT_LIMIT), 10);
+    const userId = (req as any).user.userId;
+    const conversationId = req.params.id as string;
+    const validatedQuery = (req as any).validatedQuery || {};
+    const page = validatedQuery.page || PAGINATION.DEFAULT_PAGE;
+    const limit = validatedQuery.limit || PAGINATION.DEFAULT_LIMIT;
 
-        const result = await this.messageService.getMessages(conversationId, userId, page, limit);
+    const result = await this.messageService.getMessages(conversationId, userId, page, limit);
 
-        ResponseUtil.paginated(res, result.messages, {
-            currentPage: page,
-            itemsPerPage: limit,
-            totalItems: result.total,
-            totalPages: Math.ceil(result.total / limit),
-            hasNextPage: page * limit < result.total,
-            hasPreviousPage: page > 1,
-        }, 'Messages retrieved');
-    };
+    ResponseUtil.paginated(res, result.messages, {
+        currentPage: page,
+        itemsPerPage: limit,
+        totalItems: result.total,
+        totalPages: Math.ceil(result.total / limit),
+        hasNextPage: page * limit < result.total,
+        hasPreviousPage: page > 1,
+    }, 'Messages retrieved');
+};
 
     markAsRead = async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
         const userId = (req as any).user.userId;
