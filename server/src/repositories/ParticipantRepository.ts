@@ -5,7 +5,7 @@
  * Manages membership records — adding, removing, and querying
  * participants within conversations.
  */
-import { Repository } from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 import { Participant } from '../entities/Participant';
 import { AppDataSource } from '../config/database.config';
 
@@ -46,15 +46,15 @@ export class ParticipantRepository {
     }
 
     async findByConversation(conversationId: string): Promise<Participant[]> {
-    return this.participantRepository.find({
-        where: { conversationId, leftAt: null as any },
-        relations: { user: true },
-    });
-}
+        return this.participantRepository.find({
+            where: { conversationId, leftAt: IsNull() },
+            relations: { user: true },
+        });
+    }
 
     async findParticipant(conversationId: string, userId: string): Promise<Participant | null> {
         return this.participantRepository.findOne({
-            where: { conversationId, userId, leftAt: null as any },
+            where: { conversationId, userId, leftAt: IsNull() },
         });
     }
 
