@@ -1,10 +1,10 @@
 /**
  * Socket Service
- * 
+ *
  * Manages the Socket.IO client connection.
  * Provides a singleton socket instance with automatic auth token attachment
  * and connection state tracking.
- * 
+ *
  * Components never call socket.emit() directly — they use hooks.
  */
 import { io, Socket } from 'socket.io-client';
@@ -17,6 +17,13 @@ let socket: Socket | null = null;
 export function connectSocket(): Socket {
     if (socket?.connected) {
         return socket;
+    }
+
+    // If a stale disconnected instance exists, clean it up before creating a new one.
+    if (socket) {
+        socket.removeAllListeners();
+        socket.disconnect();
+        socket = null;
     }
 
     const token = getAccessToken();
@@ -45,8 +52,20 @@ export function connectSocket(): Socket {
     return socket;
 }
 
+/**
+ * Updates the auth token on the existing socket and forces a reconnect.
+ * Called by useAuth after a successful token refresh so the server
+ * re-authenticates the socket without creating a new instance.
+ */
+export function reconnectWithToken(token: string): void {
+    if (!socket) return;
+    socket.auth = { token };
+    socket.disconnect().connect();
+}
+
 export function disconnectSocket(): void {
     if (socket) {
+        socket.removeAllListeners();
         socket.disconnect();
         socket = null;
     }
