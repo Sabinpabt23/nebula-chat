@@ -60,7 +60,7 @@ export function useAuth() {
             return;
         }
 
-        const redirectUri = window.location.origin;
+        const redirectUri = `${window.location.origin}/google-callback.html`;
         const googleUrl =
             `https://accounts.google.com/o/oauth2/v2/auth?` +
             `client_id=${encodeURIComponent(clientId)}&` +
@@ -81,36 +81,27 @@ export function useAuth() {
             return;
         }
 
-        const checkPopup = setInterval(() => {
-            try {
-                if (popup.closed) {
-                    clearInterval(checkPopup);
-                    reject(new Error('Google sign-in cancelled.'));
-                    return;
-                }
+        const handleMessage = (event: MessageEvent) => {
+            if (event.origin !== window.location.origin) return;
+            if (event.data?.type !== 'google-login') return;
 
-                const popupUrl = popup.location.href;
-                const hash = popupUrl.split('#')[1];
+            window.removeEventListener('message', handleMessage);
 
-                if (hash) {
-                    clearInterval(checkPopup);
-                    const params = new URLSearchParams(hash);
-                    const credential = params.get('id_token') || params.get('access_token');
-
-                    if (credential) {
-                        popup.close();
-                        googleLogin(credential).then(resolve).catch(reject);
-                    } else {
-                        popup.close();
-                        reject(new Error('No credential received from Google.'));
-                    }
-                }
-            } catch {
-                // Cross-origin — popup is still on Google's domain, keep waiting
+            if (event.data.error) {
+                reject(new Error(event.data.error));
+                return;
             }
-          }, 500);
-       });
-    }, [googleLogin]);
+
+            if (event.data.credential) {
+                googleLogin(event.data.credential).then(resolve).catch(reject);
+            } else {
+                reject(new Error('No credential received from Google.'));
+            }
+        };
+
+        window.addEventListener('message', handleMessage);
+    });
+}, [googleLogin]);
 
     const logout = useCallback(async (): Promise<void> => {
         await api.post('/auth/logout');
