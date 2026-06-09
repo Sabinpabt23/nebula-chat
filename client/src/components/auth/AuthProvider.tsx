@@ -44,8 +44,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     async function restoreSession() {
       try {
-        const { data } =
-          await api.post<ApiResponse<AuthTokens>>("/auth/refresh");
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+
+        const { data } = await api.post<ApiResponse<AuthTokens>>(
+          "/auth/refresh",
+          {},
+          {
+            signal: controller.signal,
+          },
+        );
+        clearTimeout(timeout);
+
         const { accessToken: newToken, user } = data.data!;
         setAccessToken(newToken);
         setAuth(user, newToken);

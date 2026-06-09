@@ -51,8 +51,12 @@ api.interceptors.response.use(
     async (error: AxiosError) => {
         const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
+        // Never intercept the refresh endpoint itself — prevents infinite loop
+        if (originalRequest.url === '/auth/refresh') {
+            return Promise.reject(error);
+        }
+
         if (error.response?.status === 401 && !originalRequest._retry) {
-            console.log('[API] 401 detected, attempting refresh...');
             if (isRefreshing) {
                 return new Promise((resolve, reject) => {
                     refreshQueue.push({ resolve, reject });
@@ -71,7 +75,7 @@ api.interceptors.response.use(
                 const { data } = await api.post('/auth/refresh');
                 const newToken = data.data.accessToken;
                 setAccessToken(newToken);
-                
+
                 if (onTokenRefresh) {
                     onTokenRefresh(newToken);
                 }
@@ -84,7 +88,6 @@ api.interceptors.response.use(
                 }
                 return api(originalRequest);
             } catch (refreshError) {
-                console.log('[API] Refresh failed, redirecting to login');
                 refreshQueue.forEach(({ reject }) => reject(refreshError as Error));
                 refreshQueue = [];
                 setAccessToken(null);
