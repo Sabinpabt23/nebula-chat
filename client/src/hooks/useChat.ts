@@ -1,11 +1,17 @@
 /**
  * useChat Hook
- * 
+ *
  * Orchestrates chat operations by combining API calls, socket events,
  * and the chat store. Components call these functions — they never
  * call api.get() or useChatStore directly.
- * 
- * Provides: fetchConversations, fetchMessages, sendMessage, createDM
+ *
+ * Provides: fetchConversations, fetchMessages, sendMessage, createDM, selectConversation
+ *
+ * Message deduplication strategy:
+ * sendMessage posts to the HTTP API to persist the message. It does NOT
+ * add the message to the store directly. The server broadcasts 'message:new'
+ * back to all room members including the sender. useSocket's listener is the
+ * single point where messages enter the store — for all users, consistently.
  */
 import { useCallback } from 'react';
 import api from '../services/api';
@@ -15,7 +21,6 @@ import { SOCKET_EVENTS } from '../lib/constants';
 import { type ApiResponse, type Conversation, type Message } from '../types';
 
 export function useChat() {
-
     const {
         conversations,
         activeConversationId,
@@ -45,21 +50,22 @@ export function useChat() {
         content: string,
         messageType: 'TEXT' | 'IMAGE' | 'FILE' = 'TEXT'
     ): Promise<void> => {
-        const { data } = await api.post<ApiResponse<Message>>(
+        // Persist via HTTP — the server handles broadcasting via Socket.IO.
+        // Do NOT call addMessage here. The socket 'message:new' event will
+        // fire for everyone in the room including the sender, and useSocket's
+        // listener is the single source of truth for adding messages to the store.
+        await api.post<ApiResponse<Message>>(
             `/conversations/${conversationId}/messages`,
             { content, messageType }
         );
 
-        if (data.data) {
-            addMessage(conversationId, data.data);
-        }
-
+        // Emit the socket event so the server knows to broadcast.
         getSocket()?.emit(SOCKET_EVENTS.MESSAGE_SEND, {
             conversationId,
             content,
             messageType,
         });
-    }, [addMessage]);
+    }, []);
 
     const createDM = useCallback(async (userId: string): Promise<Conversation | null> => {
         const { data } = await api.post<ApiResponse<Conversation>>('/conversations/dm', { userId });
@@ -81,14 +87,14 @@ export function useChat() {
     const activeConversation = conversations.find((c) => c.id === activeConversationId) || null;
 
     return {
-    conversations,
-    activeConversation,
-    activeMessages,
-    unreadCounts,
-    fetchConversations,
-    fetchMessages,
-    sendMessage,
-    createDM,
-    selectConversation,
-  };
+        conversations,
+        activeConversation,
+        activeMessages,
+        unreadCounts,
+        fetchConversations,
+        fetchMessages,
+        sendMessage,
+        createDM,
+        selectConversation,
+    };
 }

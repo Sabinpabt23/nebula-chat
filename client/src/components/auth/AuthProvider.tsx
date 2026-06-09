@@ -4,6 +4,10 @@
  * Runs once on app mount. Attempts to restore a session from the
  * refresh token cookie. Shows a loading screen while checking.
  * All protected routes wait for this check to complete.
+ *
+ * This is also the correct place to wire up the token-refresh callback
+ * from api.ts — it runs once and updates the store when the Axios
+ * interceptor silently refreshes an expired access token.
  */
 import {
   createContext,
@@ -12,7 +16,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import api, { setAccessToken } from "../../services/api";
+import api, { setAccessToken, onTokenRefreshed } from "../../services/api";
 import { useAuthStore } from "../../stores/authStore";
 import { type ApiResponse, type AuthTokens } from "../../types";
 
@@ -31,6 +35,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
+    // Wire up the token-refresh callback once at app level.
+    // When the Axios interceptor silently refreshes an expired access token,
+    // this keeps the Zustand store in sync with the new token in api.ts memory.
+    onTokenRefreshed((newToken: string) => {
+      useAuthStore.getState().setAccessToken(newToken);
+    });
+
     async function restoreSession() {
       try {
         const { data } =
@@ -45,8 +56,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsChecking(false);
       }
     }
+
     restoreSession();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (isChecking) {
     return (

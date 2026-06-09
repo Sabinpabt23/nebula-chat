@@ -3,6 +3,10 @@
  *
  * Root application component for Nebula Chat.
  * Defines top-level routes: /login and /chat.
+ *
+ * Auth check happens once at app level via AuthProvider (in main.tsx).
+ * Route protection is enforced here via ProtectedRoute.
+ * Routes are matched top-to-bottom — duplicates have been removed.
  */
 import { Routes, Route, Navigate } from "react-router-dom";
 import { LoginPage } from "./pages/LoginPage";
@@ -13,11 +17,10 @@ import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 export default function App() {
   return (
     <Routes>
+      {/* Public route */}
       <Route path={ROUTES.LOGIN} element={<LoginPage />} />
-      <Route path={ROUTES.CHAT} element={<ChatPage />} />
-      <Route path="*" element={<Navigate to={ROUTES.LOGIN} replace />} />
-      <Route path={ROUTES.CHAT} element={<ChatPage />} />
-      <Route path={`${ROUTES.CHAT}/:conversationId`} element={<ChatPage />} />
+
+      {/* Protected routes — ProtectedRoute redirects to /login if not authenticated */}
       <Route
         path={ROUTES.CHAT}
         element={
@@ -34,6 +37,9 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+
+      {/* Catch-all — must be last */}
+      <Route path="*" element={<Navigate to={ROUTES.LOGIN} replace />} />
     </Routes>
   );
 }
