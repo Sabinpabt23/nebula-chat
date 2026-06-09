@@ -15,6 +15,8 @@ export default function App() {
       <Route path={ROUTES.LOGIN} element={<LoginPage />} />
       <Route path={ROUTES.CHAT} element={<ChatPage />} />
       <Route path="*" element={<Navigate to={ROUTES.LOGIN} replace />} />
+      <Route path={ROUTES.CHAT} element={<ChatPage />} />
+      <Route path={`${ROUTES.CHAT}/:conversationId`} element={<ChatPage />} />
     </Routes>
   );
 }
