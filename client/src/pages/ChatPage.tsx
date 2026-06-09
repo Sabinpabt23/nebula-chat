@@ -26,6 +26,7 @@ export function ChatPage() {
     fetchConversations,
     selectConversation,
     sendMessage,
+    createDM,
   } = useChat();
 
   useEffect(() => {
@@ -44,6 +45,11 @@ export function ChatPage() {
           activeId={activeConversation?.id || null}
           onSelect={selectConversation}
           unreadCounts={unreadCounts}
+          onStartChat={(userId) => {
+            createDM(userId).then((conv) => {
+              if (conv) selectConversation(conv.id);
+            });
+          }}
         />
       }
     >

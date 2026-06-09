@@ -6,12 +6,15 @@
  * Highlights the currently active conversation.
  */
 import { type Conversation } from "../../types";
+import { useState } from "react";
+import { NewChatModal } from "./NewChatModal";
 
 interface ConversationListProps {
   conversations: Conversation[];
   activeId: string | null;
   onSelect: (id: string) => void;
   unreadCounts: Record<string, number>;
+  onStartChat: (userId: string) => void;
 }
 
 export function ConversationList({
@@ -19,11 +22,14 @@ export function ConversationList({
   activeId,
   onSelect,
   unreadCounts,
+  onStartChat,
 }: ConversationListProps) {
+  const [showModal, setShowModal] = useState(false);
+
   return (
     <div className="flex flex-col h-full">
       <div
-        className="p-4 border-b"
+        className="p-4 border-b flex items-center justify-between"
         style={{ borderColor: "var(--color-border, #2a2a2e)" }}
       >
         <h2
@@ -32,6 +38,17 @@ export function ConversationList({
         >
           Chats
         </h2>
+        <button
+          onClick={() => setShowModal(true)}
+          className="w-7 h-7 rounded-lg flex items-center justify-center text-lg transition-colors duration-100"
+          style={{
+            backgroundColor: "var(--color-bg-elevated, #1e1e21)",
+            color: "var(--color-text-secondary)",
+          }}
+          title="New Chat"
+        >
+          +
+        </button>
       </div>
       <div className="flex-1 overflow-y-auto">
         {conversations.length === 0 ? (
@@ -97,6 +114,12 @@ export function ConversationList({
           })
         )}
       </div>
+      {showModal && (
+        <NewChatModal
+          onClose={() => setShowModal(false)}
+          onStartChat={onStartChat}
+        />
+      )}
     </div>
   );
 }
