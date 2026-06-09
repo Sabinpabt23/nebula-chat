@@ -48,7 +48,7 @@ export function ChatPage() {
         }
       });
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Fetch conversations once authenticated ────────────────────────────
   useEffect(() => {
