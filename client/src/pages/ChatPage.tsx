@@ -25,7 +25,7 @@ export function ChatPage() {
 
   const navigate = useNavigate();
   const { conversationId } = useParams<{ conversationId?: string }>();
-  const { refreshAuth } = useAuth();
+  const { refreshAuth, logout } = useAuth();
   const { joinConversation, leaveConversation } = useSocket();
 
   const {
@@ -101,6 +101,38 @@ export function ChatPage() {
         />
       }
     >
+      {/* Header bar */}
+      <div
+        className="px-6 py-3 border-b flex items-center justify-between"
+        style={{ borderColor: "var(--color-border, #2a2a2e)" }}
+      >
+        <span
+          className="text-sm font-medium"
+          style={{ color: "var(--color-text-primary)" }}
+        >
+          {activeConversation
+            ? activeConversation.type === "DIRECT"
+              ? activeConversation.participants?.find(
+                  (p) => p.userId !== currentUserId,
+                )?.user?.displayName
+              : activeConversation.name
+            : "Nebula Chat"}
+        </span>
+        <button
+          onClick={() => {
+            logout();
+            navigate(ROUTES.LOGIN, { replace: true });
+          }}
+          className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-150"
+          style={{
+            backgroundColor: "var(--color-bg-elevated, #1e1e21)",
+            color: "var(--color-text-secondary)",
+          }}
+        >
+          Logout
+        </button>
+      </div>
+
       <MessageArea
         conversation={activeConversation}
         messages={activeMessages}
