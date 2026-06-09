@@ -54,7 +54,7 @@ router.post('/otp/send', (req, res, next) => {
         throw new BadRequestException('Validation failed', 'VALIDATION_ERROR', result.error.issues);
     }
     req.body = result.data; // Reassign sanitized/stripped output back to the request payload
-    authController.sendOtp(req, res, next);
+    return authController.sendOtp(req, res, next);
 });
 
 /**
@@ -68,7 +68,7 @@ router.post('/otp/verify', (req, res, next) => {
         throw new BadRequestException('Validation failed', 'VALIDATION_ERROR', result.error.issues);
     }
     req.body = result.data;
-    authController.verifyOtp(req, res, next);
+     return  authController.verifyOtp(req, res, next);
 });
 
 /**
@@ -82,7 +82,7 @@ router.post('/google', (req, res, next) => {
         throw new BadRequestException('Validation failed', 'VALIDATION_ERROR', result.error.issues);
     }
     req.body = result.data;
-    authController.googleLogin(req, res, next);
+    return authController.googleLogin(req, res, next);
 });
 
 /**
@@ -91,7 +91,7 @@ router.post('/google', (req, res, next) => {
  * @access  Public (Token verified inside Controller layer)
  */
 router.post('/refresh', (req, res, next) => {
-    authController.refreshToken(req, res, next);
+    return authController.refreshToken(req, res, next);
 });
 
 /**
@@ -100,7 +100,7 @@ router.post('/refresh', (req, res, next) => {
  * @access  Protected
  */
 router.post('/logout', AuthMiddleware.authenticate, (req, res, next) => {
-    authController.logout(req, res, next);
+    return authController.logout(req, res, next);
 });
 
 export default router;

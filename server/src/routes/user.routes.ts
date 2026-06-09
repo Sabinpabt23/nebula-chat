@@ -30,7 +30,7 @@ const userController = new UserController(userService);
 router.use(AuthMiddleware.authenticate);
 
 router.get('/me', (req, res, next) => {
-    userController.getProfile(req, res, next);
+    return userController.getProfile(req, res, next);
 });
 
 router.patch('/me', (req, res, next) => {
@@ -39,7 +39,7 @@ router.patch('/me', (req, res, next) => {
         throw new BadRequestException('Validation failed', 'VALIDATION_ERROR', result.error.issues);
     }
     req.body = result.data;
-    userController.updateProfile(req, res, next);
+    return userController.updateProfile(req, res, next);
 });
 
 router.get('/search', (req, res, next) => {
@@ -48,11 +48,11 @@ router.get('/search', (req, res, next) => {
         throw new BadRequestException('Validation failed', 'VALIDATION_ERROR', result.error.issues);
     }
     (req as any).validatedQuery = result.data;
-    userController.searchUsers(req, res, next);
+    return userController.searchUsers(req, res, next);
 });
 
 router.get('/:id/status', (req, res, next) => {
-    userController.getUserStatus(req, res, next);
+    return userController.getUserStatus(req, res, next);
 });
 
 export default router;

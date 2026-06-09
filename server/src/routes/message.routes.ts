@@ -38,7 +38,7 @@ router.get('/conversations/:id/messages', (req, res, next) => {
         throw new BadRequestException('Validation failed', 'VALIDATION_ERROR', result.error.issues);
     }
     (req as any).validatedQuery = result.data;
-    messageController.getMessages(req, res, next);
+   return messageController.getMessages(req, res, next);
 });
 
 router.post('/conversations/:id/messages', (req, res, next) => {
@@ -47,7 +47,7 @@ router.post('/conversations/:id/messages', (req, res, next) => {
         throw new BadRequestException('Validation failed', 'VALIDATION_ERROR', result.error.issues);
     }
     req.body = result.data;
-    messageController.sendMessage(req, res, next);
+    return messageController.sendMessage(req, res, next);
 });
 
 router.post('/messages/:id/read', (req, res, next) => {
@@ -56,7 +56,7 @@ router.post('/messages/:id/read', (req, res, next) => {
         throw new BadRequestException('Validation failed', 'VALIDATION_ERROR', result.error.issues);
     }
     req.body = result.data;
-    messageController.markAsRead(req, res, next);
+    return messageController.markAsRead(req, res, next);
 });
 
 export default router;

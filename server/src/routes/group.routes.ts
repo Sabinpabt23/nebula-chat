@@ -29,11 +29,11 @@ const groupController = new GroupController(conversationService, notificationSer
 router.use(AuthMiddleware.authenticate);
 
 router.get('/unread', (req, res, next) => {
-    groupController.getUnreadCounts(req, res, next);
+    return groupController.getUnreadCounts(req, res, next);
 });
 
 router.get('/:id/unread', (req, res, next) => {
-    groupController.getConversationUnreadCount(req, res, next);
+    return groupController.getConversationUnreadCount(req, res, next);
 });
 
 export default router;

@@ -24,7 +24,7 @@ const conversationController = new ConversationController(conversationService);
 router.use(AuthMiddleware.authenticate);
 
 router.get('/', (req, res, next) => {
-    conversationController.getUserConversations(req, res, next);
+    return conversationController.getUserConversations(req, res, next);
 });
 
 router.post('/dm', (req, res, next) => {
@@ -33,7 +33,7 @@ router.post('/dm', (req, res, next) => {
         throw new BadRequestException('Validation failed', 'VALIDATION_ERROR', result.error.issues);
     }
     req.body = result.data;
-    conversationController.createDirectConversation(req, res, next);
+    return conversationController.createDirectConversation(req, res, next);
 });
 
 router.post('/group', (req, res, next) => {
@@ -42,11 +42,11 @@ router.post('/group', (req, res, next) => {
         throw new BadRequestException('Validation failed', 'VALIDATION_ERROR', result.error.issues);
     }
     req.body = result.data;
-    conversationController.createGroupConversation(req, res, next);
+    return conversationController.createGroupConversation(req, res, next);
 });
 
 router.get('/:id', (req, res, next) => {
-    conversationController.getConversationDetails(req, res, next);
+    return conversationController.getConversationDetails(req, res, next);
 });
 
 router.post('/:id/members', (req, res, next) => {
@@ -55,11 +55,11 @@ router.post('/:id/members', (req, res, next) => {
         throw new BadRequestException('Validation failed', 'VALIDATION_ERROR', result.error.issues);
     }
     req.body = result.data;
-    conversationController.addMembers(req, res, next);
+    return conversationController.addMembers(req, res, next);
 });
 
 router.delete('/:id/members/:userId', (req, res, next) => {
-    conversationController.removeMember(req, res, next);
+    return conversationController.removeMember(req, res, next);
 });
 
 export default router;
