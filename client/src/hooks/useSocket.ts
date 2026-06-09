@@ -78,15 +78,15 @@ export function useSocket() {
     }, [isAuthenticated, addMessage, setUnreadCounts]);
 
     return {
-        joinConversation: (conversationId: string) => {
-            activeRoomRef.current = conversationId;
-            getSocket()?.emit('join:conversation', { conversationId });
-        },
-        leaveConversation: (conversationId: string) => {
-            if (activeRoomRef.current === conversationId) {
-                activeRoomRef.current = null;
-            }
-            getSocket()?.emit('leave:conversation', { conversationId });
-        },
-    };
+    joinConversation: (conversationId: string) => {
+        activeRoomRef.current = conversationId;
+        getSocket()?.emit('join:conversation', conversationId);
+    },
+    leaveConversation: (conversationId: string) => {
+        if (activeRoomRef.current === conversationId) {
+            activeRoomRef.current = null;
+        }
+        getSocket()?.emit('leave:conversation', conversationId);
+    },
+};
 }
