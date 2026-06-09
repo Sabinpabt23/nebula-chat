@@ -78,6 +78,7 @@ export function ChatPage() {
           activeId={activeConversation?.id || null}
           onSelect={handleSelectConversation}
           unreadCounts={unreadCounts}
+          currentUserId={useAuthStore((state) => state.user?.id || "")}
           onStartChat={(userId) => {
             createDM(userId).then((conv) => {
               if (conv) handleSelectConversation(conv.id);

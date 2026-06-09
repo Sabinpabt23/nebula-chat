@@ -15,6 +15,7 @@ interface ConversationListProps {
   onSelect: (id: string) => void;
   unreadCounts: Record<string, number>;
   onStartChat: (userId: string) => void;
+  currentUserId: string;
 }
 
 export function ConversationList({
@@ -23,6 +24,7 @@ export function ConversationList({
   onSelect,
   unreadCounts,
   onStartChat,
+  currentUserId,
 }: ConversationListProps) {
   const [showModal, setShowModal] = useState(false);
 
@@ -64,8 +66,8 @@ export function ConversationList({
             const isActive = conv.id === activeId;
             const name =
               conv.type === "DIRECT"
-                ? conv.participants?.find((p) => p.userId)?.user?.displayName ||
-                  "Unknown"
+                ? conv.participants?.find((p) => p.userId !== currentUserId)
+                    ?.user?.displayName || "Unknown"
                 : conv.name || "Group";
 
             return (
