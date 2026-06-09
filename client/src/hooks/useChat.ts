@@ -20,6 +20,7 @@ export function useChat() {
         conversations,
         activeConversationId,
         messages,
+        unreadCounts,
         setConversations,
         addConversation,
         setActiveConversation,
@@ -80,13 +81,14 @@ export function useChat() {
     const activeConversation = conversations.find((c) => c.id === activeConversationId) || null;
 
     return {
-        conversations,
-        activeConversation,
-        activeMessages,
-        fetchConversations,
-        fetchMessages,
-        sendMessage,
-        createDM,
-        selectConversation,
-    };
+    conversations,
+    activeConversation,
+    activeMessages,
+    unreadCounts,
+    fetchConversations,
+    fetchMessages,
+    sendMessage,
+    createDM,
+    selectConversation,
+  };
 }
