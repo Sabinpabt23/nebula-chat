@@ -6,7 +6,7 @@
  * from both API responses and socket events.
  */
 import { create } from 'zustand';
-import { type Conversation, type Message, type SocketUnreadCount } from '../types';
+import { type Conversation, type Message } from '../types';
 
 interface ChatState {
     conversations: Conversation[];
@@ -20,7 +20,7 @@ interface ChatState {
     setMessages: (conversationId: string, messages: Message[]) => void;
     addMessage: (conversationId: string, message: Message) => void;
     updateUnreadCount: (conversationId: string, count: number) => void;
-    setUnreadCounts: (counts: SocketUnreadCount[]) => void;
+    setUnreadCounts: (counts: Array<{ conversationId: string; count: number }>) => void;
 }
 
 export const useChatStore = create<ChatState>((set) => ({
@@ -59,11 +59,13 @@ export const useChatStore = create<ChatState>((set) => ({
             unreadCounts: { ...state.unreadCounts, [conversationId]: count },
         })),
 
-    setUnreadCounts: (counts) =>
-        set(() => ({
+    setUnreadCounts: (counts) => {
+        if (!counts || !Array.isArray(counts)) return;
+        set({
             unreadCounts: counts.reduce(
                 (acc, { conversationId, count }) => ({ ...acc, [conversationId]: count }),
                 {} as Record<string, number>
             ),
-        })),
+        });
+    },
 }));

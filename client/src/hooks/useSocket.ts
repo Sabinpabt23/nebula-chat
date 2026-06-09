@@ -4,13 +4,14 @@
  * Manages the Socket.IO connection lifecycle and subscribes
  * to real-time events. Updates stores when events arrive.
  * Components use this hook to react to real-time data.
+ * Only connects when the user is authenticated.
  */
 import { useEffect } from 'react';
 import { connectSocket, disconnectSocket, getSocket } from '../services/socket';
 import { useChatStore } from '../stores/chatStore';
 import { useAuthStore } from '../stores/authStore';
 import { SOCKET_EVENTS } from '../lib/constants';
-import { type SocketUserStatus, type SocketNewMessage, type SocketTypingEvent, type SocketUnreadCount } from '../types';
+import { type Message } from '../types';
 
 export function useSocket() {
     const { addMessage, setUnreadCounts } = useChatStore();
@@ -21,12 +22,14 @@ export function useSocket() {
 
         const socket = connectSocket();
 
-        socket.on(SOCKET_EVENTS.MESSAGE_NEW, (data: SocketNewMessage) => {
-            addMessage(data.message.conversationId, data.message);
+        socket.on(SOCKET_EVENTS.MESSAGE_NEW, (message: Message) => {
+            addMessage(message.conversationId, message);
         });
 
-        socket.on(SOCKET_EVENTS.UNREAD_COUNT, (data: { counts: SocketUnreadCount[] }) => {
-            setUnreadCounts(data.counts);
+        socket.on(SOCKET_EVENTS.UNREAD_COUNT, (data: { counts: Array<{ conversationId: string; count: number }> }) => {
+            if (data?.counts && Array.isArray(data.counts)) {
+                setUnreadCounts(data.counts);
+            }
         });
 
         return () => {
