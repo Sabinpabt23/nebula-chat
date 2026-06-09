@@ -100,8 +100,8 @@ export function useAuth() {
         };
 
         window.addEventListener('message', handleMessage);
-    });
-}, [googleLogin]);
+     });
+  }, [googleLogin]);
 
     const logout = useCallback(async (): Promise<void> => {
         await api.post('/auth/logout');
