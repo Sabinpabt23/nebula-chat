@@ -25,7 +25,7 @@ export function ChatPage() {
 
   const navigate = useNavigate();
   const { conversationId } = useParams<{ conversationId?: string }>();
-  const { refreshAuth, logout } = useAuth();
+  const { logout } = useAuth();
   const { joinConversation, leaveConversation } = useSocket();
 
   const {
@@ -38,17 +38,6 @@ export function ChatPage() {
     sendMessage,
     createDM,
   } = useChat();
-
-  // ── Session restore on page load ──────────────────────────────────────
-  useEffect(() => {
-    if (!isAuthenticated) {
-      refreshAuth().then((success) => {
-        if (!success) {
-          navigate(ROUTES.LOGIN, { replace: true });
-        }
-      });
-    }
-  }, []);
 
   // ── Fetch conversations once authenticated ────────────────────────────
   useEffect(() => {
