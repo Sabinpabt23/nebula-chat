@@ -11,7 +11,6 @@ import { useCallback } from 'react';
 import api, { setAccessToken, onTokenRefreshed } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 import { type ApiResponse, type AuthTokens } from '../types';
-import { reconnectWithToken } from '../services/socket';
 
 
 export function useAuth() {
@@ -98,7 +97,6 @@ export function useAuth() {
         const { accessToken: newToken, user: newUser } = data.data!;
         setAccessToken(newToken);
         setAuth(newUser, newToken);
-        reconnectWithToken(newToken);
         return true;
     } catch {
         return false;
