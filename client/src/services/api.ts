@@ -52,6 +52,7 @@ api.interceptors.response.use(
         const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
         if (error.response?.status === 401 && !originalRequest._retry) {
+            console.log('[API] 401 detected, attempting refresh...');
             if (isRefreshing) {
                 return new Promise((resolve, reject) => {
                     refreshQueue.push({ resolve, reject });
@@ -83,6 +84,7 @@ api.interceptors.response.use(
                 }
                 return api(originalRequest);
             } catch (refreshError) {
+                console.log('[API] Refresh failed, redirecting to login');
                 refreshQueue.forEach(({ reject }) => reject(refreshError as Error));
                 refreshQueue = [];
                 setAccessToken(null);

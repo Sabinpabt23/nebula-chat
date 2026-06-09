@@ -4,6 +4,7 @@
  * Main chat interface page. Composes the sidebar (ConversationList)
  * and the message area (MessageArea) inside the AppShell layout.
  * Uses useChat hook for all data operations.
+ * On mount, restores session from refresh cookie before fetching data.
  */
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -11,12 +12,14 @@ import { AppShell } from "../components/layout/AppShell";
 import { ConversationList } from "../components/chat/ConversationList";
 import { MessageArea } from "../components/chat/MessageArea";
 import { useChat } from "../hooks/useChat";
+import { useAuth } from "../hooks/useAuth";
 import { useAuthStore } from "../stores/authStore";
 import { ROUTES } from "../lib/constants";
 
 export function ChatPage() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const navigate = useNavigate();
+  const { refreshAuth } = useAuth();
 
   const {
     conversations,
@@ -31,11 +34,19 @@ export function ChatPage() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate(ROUTES.LOGIN, { replace: true });
-      return;
+      refreshAuth().then((success) => {
+        if (!success) {
+          navigate(ROUTES.LOGIN, { replace: true });
+        }
+      });
     }
-    fetchConversations();
-  }, [isAuthenticated, navigate, fetchConversations]);
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchConversations();
+    }
+  }, [isAuthenticated, fetchConversations]);
 
   return (
     <AppShell

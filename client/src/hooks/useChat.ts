@@ -37,7 +37,7 @@ export function useChat() {
         const { data } = await api.get<ApiResponse<Message[]>>(
             `/conversations/${conversationId}/messages`
         );
-        setMessages(conversationId, data.data || []);
+        setMessages(conversationId, (data.data || []).reverse());
     }, [setMessages]);
 
     const sendMessage = useCallback(async (

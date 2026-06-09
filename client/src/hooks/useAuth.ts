@@ -12,19 +12,6 @@ import api, { setAccessToken, onTokenRefreshed } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 import { type ApiResponse, type AuthTokens } from '../types';
 
-declare global {
-    interface Window {
-        google?: {
-            accounts: {
-                id: {
-                    initialize: (config: { client_id: string; callback: (response: { credential: string }) => void }) => void;
-                    prompt: (callback?: (notification: { isNotDisplayed: () => boolean }) => void) => void;
-                    cancel: () => void;
-                };
-            };
-        };
-    }
-}
 
 export function useAuth() {
     const { setAuth, clearAuth } = useAuthStore();
@@ -103,11 +90,25 @@ export function useAuth() {
      });
   }, [googleLogin]);
 
+   
+  const refreshAuth = useCallback(async (): Promise<boolean> => {
+    try {
+        const { data } = await api.post<ApiResponse<AuthTokens>>('/auth/refresh');
+        const { accessToken: newToken, user: newUser } = data.data!;
+        setAccessToken(newToken);
+        setAuth(newUser, newToken);
+        return true;
+    } catch {
+        return false;
+    }
+}, [setAuth]);
+
+
     const logout = useCallback(async (): Promise<void> => {
         await api.post('/auth/logout');
         setAccessToken(null);
         clearAuth();
     }, [clearAuth]);
 
-    return { sendOtp, verifyOtp, triggerGoogleLogin, logout };
+     return { sendOtp, verifyOtp, triggerGoogleLogin, logout, refreshAuth };
 }
