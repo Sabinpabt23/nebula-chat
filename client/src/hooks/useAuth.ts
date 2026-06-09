@@ -52,37 +52,64 @@ export function useAuth() {
         setAuth(user, accessToken);
     }, [setAuth]);
 
-    const triggerGoogleLogin = useCallback((): Promise<void> => {
-        return new Promise((resolve, reject) => {
-            const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-            if (!clientId) {
-                reject(new Error('Google Client ID not configured'));
-                return;
-            }
+   const triggerGoogleLogin = useCallback((): Promise<void> => {
+    return new Promise((resolve, reject) => {
+        const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+        if (!clientId) {
+            reject(new Error('Google Client ID not configured'));
+            return;
+        }
 
-            if (!window.google?.accounts?.id) {
-                reject(new Error('Google sign-in library not loaded. Please refresh the page.'));
-                return;
-            }
+        const redirectUri = window.location.origin;
+        const googleUrl =
+            `https://accounts.google.com/o/oauth2/v2/auth?` +
+            `client_id=${encodeURIComponent(clientId)}&` +
+            `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+            `response_type=token id_token&` +
+            `scope=openid email profile&` +
+            `nonce=${Date.now()}&` +
+            `prompt=select_account`;
 
-            window.google.accounts.id.initialize({
-                client_id: clientId,
-                callback: async (response: { credential: string }) => {
-                    try {
-                        await googleLogin(response.credential);
-                        resolve();
-                    } catch (err) {
-                        reject(err);
-                    }
-                },
-            });
+        const popup = window.open(
+            googleUrl,
+            'google-login',
+            'width=500,height=600,left=200,top=100'
+        );
 
-            window.google.accounts.id.prompt((notification) => {
-                if (notification.isNotDisplayed()) {
-                    reject(new Error('Google sign-in was cancelled or not displayed.'));
+        if (!popup) {
+            reject(new Error('Popup blocked. Please allow popups for this site.'));
+            return;
+        }
+
+        const checkPopup = setInterval(() => {
+            try {
+                if (popup.closed) {
+                    clearInterval(checkPopup);
+                    reject(new Error('Google sign-in cancelled.'));
+                    return;
                 }
-            });
-        });
+
+                const popupUrl = popup.location.href;
+                const hash = popupUrl.split('#')[1];
+
+                if (hash) {
+                    clearInterval(checkPopup);
+                    const params = new URLSearchParams(hash);
+                    const credential = params.get('id_token') || params.get('access_token');
+
+                    if (credential) {
+                        popup.close();
+                        googleLogin(credential).then(resolve).catch(reject);
+                    } else {
+                        popup.close();
+                        reject(new Error('No credential received from Google.'));
+                    }
+                }
+            } catch {
+                // Cross-origin — popup is still on Google's domain, keep waiting
+            }
+          }, 500);
+       });
     }, [googleLogin]);
 
     const logout = useCallback(async (): Promise<void> => {
