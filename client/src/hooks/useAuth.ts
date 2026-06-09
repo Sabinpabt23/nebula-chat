@@ -5,12 +5,26 @@
  * and auth store. Components call these functions — they never
  * call api.post() or useAuthStore directly.
  * 
- * Provides: sendOtp, verifyOtp, googleLogin, logout, refreshToken
+ * Provides: sendOtp, verifyOtp, triggerGoogleLogin, logout
  */
 import { useCallback } from 'react';
 import api, { setAccessToken, onTokenRefreshed } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 import { type ApiResponse, type AuthTokens } from '../types';
+
+declare global {
+    interface Window {
+        google?: {
+            accounts: {
+                id: {
+                    initialize: (config: { client_id: string; callback: (response: { credential: string }) => void }) => void;
+                    prompt: (callback?: (notification: { isNotDisplayed: () => boolean }) => void) => void;
+                    cancel: () => void;
+                };
+            };
+        };
+    }
+}
 
 export function useAuth() {
     const { setAuth, clearAuth } = useAuthStore();
@@ -38,18 +52,44 @@ export function useAuth() {
         setAuth(user, accessToken);
     }, [setAuth]);
 
+    const triggerGoogleLogin = useCallback((): Promise<void> => {
+        return new Promise((resolve, reject) => {
+            const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+            if (!clientId) {
+                reject(new Error('Google Client ID not configured'));
+                return;
+            }
+
+            if (!window.google?.accounts?.id) {
+                reject(new Error('Google sign-in library not loaded. Please refresh the page.'));
+                return;
+            }
+
+            window.google.accounts.id.initialize({
+                client_id: clientId,
+                callback: async (response: { credential: string }) => {
+                    try {
+                        await googleLogin(response.credential);
+                        resolve();
+                    } catch (err) {
+                        reject(err);
+                    }
+                },
+            });
+
+            window.google.accounts.id.prompt((notification) => {
+                if (notification.isNotDisplayed()) {
+                    reject(new Error('Google sign-in was cancelled or not displayed.'));
+                }
+            });
+        });
+    }, [googleLogin]);
+
     const logout = useCallback(async (): Promise<void> => {
         await api.post('/auth/logout');
         setAccessToken(null);
         clearAuth();
     }, [clearAuth]);
 
-    const triggerGoogleLogin = useCallback(async (): Promise<void> => {
-    // Open Google OAuth popup, get credential, then call the API
-    // This keeps popup logic out of the UI component
-    throw new Error('Google login not yet configured. Set VITE_GOOGLE_CLIENT_ID in .env');
-     }, [googleLogin]);
-
     return { sendOtp, verifyOtp, triggerGoogleLogin, logout };
-
 }
