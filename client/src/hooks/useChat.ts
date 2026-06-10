@@ -15,9 +15,7 @@
  */
 import { useCallback } from 'react';
 import api from '../services/api';
-import { getSocket } from '../services/socket';
 import { useChatStore } from '../stores/chatStore';
-import { SOCKET_EVENTS } from '../lib/constants';
 import { type ApiResponse, type Conversation, type Message } from '../types';
 
 export function useChat() {
