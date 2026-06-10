@@ -42,19 +42,25 @@ export class MessageReceiptRepository {
         await this.receiptRepository.save(receipts);
     }
 
-   async getUnreadCount(conversationId: string, userId: string, lastReadMessageId: string | null): Promise<number> {
-    const query = this.receiptRepository
-        .createQueryBuilder('receipt')
-        .leftJoin('receipt.message', 'message')
+  async getUnreadCount(conversationId: string, userId: string, lastReadMessageId: string | null): Promise<number> {
+    const query = this.receiptRepository.manager
+        .createQueryBuilder()
+        .select('COUNT(DISTINCT message.id)', 'count')
+        .from('messages', 'message')
+        .leftJoin('message_receipts', 'receipt', 
+            'receipt.message_id = message.id AND receipt.user_id = :userId', 
+            { userId }
+        )
         .where('message.conversationId = :conversationId', { conversationId })
         .andWhere('message.senderId != :userId', { userId })
-        .andWhere('(receipt.messageId IS NULL OR receipt.readAt IS NULL)');
+        .andWhere('receipt.message_id IS NULL');
 
     if (lastReadMessageId) {
         query.andWhere('message.id > :lastReadMessageId', { lastReadMessageId });
     }
 
-    return query.getCount();
+    const result = await query.getRawOne();
+    return result ? parseInt(result.count, 10) : 0;
 }
 
     async isMessageRead(messageId: string, userId: string): Promise<boolean> {
