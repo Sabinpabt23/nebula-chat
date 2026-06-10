@@ -46,9 +46,7 @@ export function useChat() {
     const fetchUnreadCounts = useCallback(async (): Promise<void> => {
     try {
         const { data } = await api.get<ApiResponse<Array<{ conversationId: string; count: number }>>>('/groups/unread');
-        console.log('Unread counts response:', data);
         if (data.data && Array.isArray(data.data)) {
-            console.log('Setting unread counts:', data.data);
             setUnreadCounts(data.data);
         }
     } catch (err) {

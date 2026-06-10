@@ -16,7 +16,7 @@ export class MessageReceiptRepository {
         this.receiptRepository = AppDataSource.getRepository(MessageReceipt);
     }
 
-   async markAsRead(messageId: string, userId: string): Promise<void> {
+  async markAsRead(messageId: string, userId: string): Promise<void> {
     await this.receiptRepository
         .createQueryBuilder()
         .insert()
@@ -26,7 +26,7 @@ export class MessageReceiptRepository {
             userId,
             readAt: new Date(),
         })
-        .orUpdate(['readAt'], ['message_id', 'user_id'])
+        .orUpdate(['read_at'], ['message_id', 'user_id'])
         .execute();
 }
 

@@ -65,7 +65,6 @@ const updateUnreadCount = useChatStore((state) => state.updateUnreadCount);
 
         socket.on(SOCKET_EVENTS.MESSAGE_NEW, onMessageNew);
         socket.on(SOCKET_EVENTS.UNREAD_COUNT, (data: { conversationId: string; count: number }) => {
-    console.log('[Socket] Unread count update:', data);
     if (data?.conversationId) {
         updateUnreadCount(data.conversationId, data.count);
     }
