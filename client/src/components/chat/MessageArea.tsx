@@ -12,6 +12,7 @@ import { useAuthStore } from "../../stores/authStore";
 import { getSocket } from "../../services/socket";
 import { SOCKET_EVENTS } from "../../lib/constants";
 import api from "../../services/api";
+import { useChatStore } from "../../stores/chatStore";
 
 interface MessageAreaProps {
   conversation: Conversation | null;
@@ -40,6 +41,9 @@ export function MessageArea({
         api
           .post(`/messages/${lastMessage.id}/read`, {
             messageId: lastMessage.id,
+          })
+          .then(() => {
+            useChatStore.getState().updateUnreadCount(conversation.id, 0);
           })
           .catch(() => {});
       }
