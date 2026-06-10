@@ -56,7 +56,8 @@ export function LoginForm() {
       setOtpStep("code");
     } catch (err: unknown) {
       const message =
-        err instanceof Error ? err.message : "Failed to send code. Try again.";
+        (err as any)?.response?.data?.message ||
+        "Failed to send code. Try again.";
       setError(message);
     } finally {
       setIsSending(false);
@@ -75,7 +76,7 @@ export function LoginForm() {
       // Navigation is handled by the parent route / auth guard
     } catch (err: unknown) {
       const message =
-        err instanceof Error ? err.message : "Invalid or expired code.";
+        (err as any)?.response?.data?.message || "Invalid or expired code.";
       setError(message);
     } finally {
       setIsVerifying(false);
@@ -89,9 +90,8 @@ export function LoginForm() {
       await triggerGoogleLogin();
     } catch (err: unknown) {
       const message =
-        err instanceof Error
-          ? err.message
-          : "Google sign-in failed. Try again.";
+        (err as any)?.response?.data?.message ||
+        "Google sign-in failed. Try again.";
       setError(message);
     } finally {
       setIsGoogleLoading(false);
