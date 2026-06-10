@@ -1,17 +1,14 @@
 /**
  * Socket Manager (Singleton)
- * 
- * Centralized WebSocket connection manager using Socket.IO.
+ * * Centralized WebSocket connection manager using Socket.IO.
  * Maintains a map of userId → Set<socketId> for multi-device support.
  * Provides methods to send events to specific users or conversation rooms.
- * 
- * Responsibilities:
+ * * Responsibilities:
  * - Initialize Socket.IO server with JWT authentication middleware
  * - Track user connections (register, remove, check online status)
  * - Send targeted messages to users or conversation rooms
  * - Broadcast presence updates
- * 
- * Pattern: Singleton — only one instance exists across the application
+ * * Pattern: Singleton — only one instance exists across the application
  */
 import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
@@ -19,14 +16,21 @@ import { jwtUtil } from '../utils/jwt.util';
 import { logger } from '../utils/logger.util';
 import { env } from '../config/env.config';
 import { SOCKET_EVENTS } from '../utils/constants.util';
+import { PresenceHandler } from './PresenceHandler';
+import { UserRepository } from '../repositories/UserRepository';
 
 export class SocketManager {
     private static instance: SocketManager;
     private readonly io: Server;
     private readonly userSockets: Map<string, Set<string>>;
+    private readonly presenceHandler: PresenceHandler;
 
     private constructor(server: HttpServer) {
         this.userSockets = new Map();
+        
+        const userRepository = new UserRepository();
+        this.presenceHandler = new PresenceHandler(userRepository);
+
         this.io = new Server(server, {
             cors: {
                 origin: env.cors.origin,
@@ -71,8 +75,10 @@ export class SocketManager {
     private setupConnectionHandlers(): void {
         this.io.on(SOCKET_EVENTS.CONNECTION, (socket: Socket) => {
             const userId = socket.data.userId;
+            
             this.registerUser(userId, socket.id);
-
+            this.presenceHandler.setUserOnline(userId);
+            
             logger.info(`User ${userId} connected. Socket: ${socket.id}`);
 
             this.broadcastUserStatus(userId, true);
@@ -82,6 +88,7 @@ export class SocketManager {
                 logger.info(`User ${userId} disconnected. Socket: ${socket.id}`);
 
                 if (!this.isUserOnline(userId)) {
+                    this.presenceHandler.setUserOffline(userId);
                     this.broadcastUserStatus(userId, false);
                 }
             });

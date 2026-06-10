@@ -83,14 +83,31 @@ export function ConversationList({
                     : "transparent",
                 }}
               >
-                <div
-                  className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-medium"
-                  style={{
-                    backgroundColor: "var(--color-accent)",
-                    color: "white",
-                  }}
-                >
-                  {name.charAt(0).toUpperCase()}
+                <div className="relative flex-shrink-0">
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium"
+                    style={{
+                      backgroundColor: "var(--color-accent)",
+                      color: "white",
+                    }}
+                  >
+                    {name.charAt(0).toUpperCase()}
+                  </div>
+                  {conv.type === "DIRECT" &&
+                    (() => {
+                      const otherUser = conv.participants?.find(
+                        (p) => p.userId !== currentUserId,
+                      )?.user;
+                      return otherUser?.isOnline ? (
+                        <div
+                          className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2"
+                          style={{
+                            backgroundColor: "var(--color-online, #22c55e)",
+                            borderColor: "var(--color-bg-surface)",
+                          }}
+                        />
+                      ) : null;
+                    })()}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
