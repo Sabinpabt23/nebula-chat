@@ -18,6 +18,12 @@ import { env } from '../config/env.config';
 import { SOCKET_EVENTS } from '../utils/constants.util';
 import { PresenceHandler } from './PresenceHandler';
 import { UserRepository } from '../repositories/UserRepository';
+import { ChatHandler } from './ChatHandler';
+import { MessageService } from '../services/MessageService';
+import { MessageRepository } from '../repositories/MessageRepository';
+import { MessageReceiptRepository } from '../repositories/MessageReceiptRepository';
+import { ParticipantRepository } from '../repositories/ParticipantRepository';
+import { ConversationRepository } from '../repositories/ConversationRepository';
 
 export class SocketManager {
     private static instance: SocketManager;
@@ -41,6 +47,22 @@ export class SocketManager {
 
         this.setupAuthentication();
         this.setupConnectionHandlers();
+
+        // Register chat handler
+        const messageRepo = new MessageRepository();
+        const receiptRepo = new MessageReceiptRepository();
+        const participantRepo = new ParticipantRepository();
+        const conversationRepo = new ConversationRepository();
+        
+        const messageService = new MessageService(
+            messageRepo, 
+            receiptRepo, 
+            participantRepo, 
+            conversationRepo
+        );
+        
+        const chatHandler = new ChatHandler(messageService);
+        chatHandler.register(this.io);
     }
 
     static getInstance(server?: HttpServer): SocketManager {
