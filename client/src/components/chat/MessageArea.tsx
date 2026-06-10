@@ -37,7 +37,11 @@ export function MessageArea({
     if (messages.length > 0 && conversation && user) {
       const lastMessage = messages[messages.length - 1];
       if (lastMessage.senderId !== user.id) {
-        api.post(`/messages/${lastMessage.id}/read`).catch(() => {});
+        api
+          .post(`/messages/${lastMessage.id}/read`, {
+            messageId: lastMessage.id,
+          })
+          .catch(() => {});
       }
     }
   }, [messages, conversation, user]);

@@ -16,20 +16,19 @@ export class MessageReceiptRepository {
         this.receiptRepository = AppDataSource.getRepository(MessageReceipt);
     }
 
-    async markAsRead(messageId: string, userId: string): Promise<void> {
-        const existing = await this.receiptRepository.findOne({
-            where: { messageId, userId },
-        });
-
-        if (!existing) {
-            const receipt = this.receiptRepository.create({
-                messageId,
-                userId,
-                readAt: new Date(),
-            });
-            await this.receiptRepository.save(receipt);
-        }
-    }
+   async markAsRead(messageId: string, userId: string): Promise<void> {
+    await this.receiptRepository
+        .createQueryBuilder()
+        .insert()
+        .into(MessageReceipt)
+        .values({
+            messageId,
+            userId,
+            readAt: new Date(),
+        })
+        .orUpdate(['readAt'], ['message_id', 'user_id'])
+        .execute();
+}
 
     async markMultipleAsRead(messageIds: string[], userId: string): Promise<void> {
         const receipts = messageIds.map((messageId) =>
