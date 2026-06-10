@@ -30,7 +30,6 @@ export function useChat() {
         addConversation,
         setActiveConversation,
         setMessages,
-        addMessage,
     } = useChatStore();
 
     const fetchConversations = useCallback(async (): Promise<void> => {
@@ -67,6 +66,16 @@ export function useChat() {
         });
     }, []);
 
+
+    const createGroup = useCallback(async (name: string, memberIds: string[]): Promise<Conversation | null> => {
+    const { data } = await api.post<ApiResponse<Conversation>>('/conversations/group', { name, memberIds });
+    if (data.data) {
+        addConversation(data.data);
+        return data.data;
+    }
+    return null;
+}, [addConversation]);
+
     const createDM = useCallback(async (userId: string): Promise<Conversation | null> => {
         const { data } = await api.post<ApiResponse<Conversation>>('/conversations/dm', { userId });
         if (data.data) {
@@ -87,14 +96,15 @@ export function useChat() {
     const activeConversation = conversations.find((c) => c.id === activeConversationId) || null;
 
     return {
-        conversations,
-        activeConversation,
-        activeMessages,
-        unreadCounts,
-        fetchConversations,
-        fetchMessages,
-        sendMessage,
-        createDM,
-        selectConversation,
-    };
+    conversations,
+    activeConversation,
+    activeMessages,
+    unreadCounts,
+    fetchConversations,
+    fetchMessages,
+    sendMessage,
+    createDM,
+    createGroup,
+    selectConversation,
+};
 }

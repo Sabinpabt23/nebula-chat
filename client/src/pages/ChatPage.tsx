@@ -37,6 +37,7 @@ export function ChatPage() {
     selectConversation,
     sendMessage,
     createDM,
+    createGroup,
   } = useChat();
 
   // ── Fetch conversations once authenticated ────────────────────────────
@@ -84,6 +85,11 @@ export function ChatPage() {
           currentUserId={currentUserId}
           onStartChat={(userId) => {
             createDM(userId).then((conv) => {
+              if (conv) handleSelectConversation(conv.id);
+            });
+          }}
+          onCreateGroup={(name, memberIds) => {
+            createGroup(name, memberIds).then((conv) => {
               if (conv) handleSelectConversation(conv.id);
             });
           }}

@@ -15,6 +15,7 @@ interface ConversationListProps {
   onSelect: (id: string) => void;
   unreadCounts: Record<string, number>;
   onStartChat: (userId: string) => void;
+  onCreateGroup: (name: string, memberIds: string[]) => void;
   currentUserId: string;
 }
 
@@ -24,6 +25,7 @@ export function ConversationList({
   onSelect,
   unreadCounts,
   onStartChat,
+  onCreateGroup,
   currentUserId,
 }: ConversationListProps) {
   const [showModal, setShowModal] = useState(false);
@@ -120,6 +122,7 @@ export function ConversationList({
         <NewChatModal
           onClose={() => setShowModal(false)}
           onStartChat={onStartChat}
+          onCreateGroup={onCreateGroup}
         />
       )}
     </div>
