@@ -14,6 +14,7 @@ import {
   useContext,
   useEffect,
   useState,
+  useRef,
   type ReactNode,
 } from "react";
 import api, { setAccessToken, onTokenRefreshed } from "../../services/api";
@@ -33,8 +34,13 @@ export function useAuthContext() {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { setAuth, clearAuth } = useAuthStore();
   const [isChecking, setIsChecking] = useState(true);
+  const hasRun = useRef(false);
 
   useEffect(() => {
+    // Prevent double invocation in development React StrictMode
+    if (hasRun.current) return;
+    hasRun.current = true;
+
     // Wire up the token-refresh callback once at app level.
     // When the Axios interceptor silently refreshes an expired access token,
     // this keeps the Zustand store in sync with the new token in api.ts memory.
