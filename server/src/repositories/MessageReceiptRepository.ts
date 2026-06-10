@@ -42,20 +42,20 @@ export class MessageReceiptRepository {
         await this.receiptRepository.save(receipts);
     }
 
-    async getUnreadCount(conversationId: string, userId: string, lastReadMessageId: string | null): Promise<number> {
-        const query = this.receiptRepository
-            .createQueryBuilder('receipt')
-            .innerJoin('receipt.message', 'message')
-            .where('message.conversationId = :conversationId', { conversationId })
-            .andWhere('receipt.userId = :userId', { userId })
-            .andWhere('receipt.readAt IS NULL');
+   async getUnreadCount(conversationId: string, userId: string, lastReadMessageId: string | null): Promise<number> {
+    const query = this.receiptRepository
+        .createQueryBuilder('receipt')
+        .leftJoin('receipt.message', 'message')
+        .where('message.conversationId = :conversationId', { conversationId })
+        .andWhere('message.senderId != :userId', { userId })
+        .andWhere('(receipt.id IS NULL OR receipt.readAt IS NULL)');
 
-        if (lastReadMessageId) {
-            query.andWhere('message.id > :lastReadMessageId', { lastReadMessageId });
-        }
-
-        return query.getCount();
+    if (lastReadMessageId) {
+        query.andWhere('message.id > :lastReadMessageId', { lastReadMessageId });
     }
+
+    return query.getCount();
+}
 
     async isMessageRead(messageId: string, userId: string): Promise<boolean> {
         const receipt = await this.receiptRepository.findOne({

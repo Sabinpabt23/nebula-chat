@@ -19,10 +19,11 @@ import { type Message } from '../types';
 
 export function useSocket() {
     const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-
+    
     // Pull store actions once — these are stable references from Zustand.
-    const addMessage = useChatStore((state) => state.addMessage);
-    const setUnreadCounts = useChatStore((state) => state.setUnreadCounts);
+const addMessage = useChatStore((state) => state.addMessage);
+const setUnreadCounts = useChatStore((state) => state.setUnreadCounts);
+const updateUnreadCount = useChatStore((state) => state.updateUnreadCount);
 
     // Track which conversation room we're currently in so we can
     // re-join it automatically if the socket reconnects mid-session.
@@ -63,7 +64,12 @@ export function useSocket() {
         }
 
         socket.on(SOCKET_EVENTS.MESSAGE_NEW, onMessageNew);
-        socket.on(SOCKET_EVENTS.UNREAD_COUNT, onUnreadCount);
+        socket.on(SOCKET_EVENTS.UNREAD_COUNT, (data: { conversationId: string; count: number }) => {
+    console.log('[Socket] Unread count update:', data);
+    if (data?.conversationId) {
+        updateUnreadCount(data.conversationId, data.count);
+    }
+});
         socket.io.on('reconnect', onReconnect);
 
         // ── Cleanup ───────────────────────────────────────────────────────

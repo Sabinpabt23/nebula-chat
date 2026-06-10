@@ -28,19 +28,33 @@ export function useChat() {
         addConversation,
         setActiveConversation,
         setMessages,
+        setUnreadCounts,
     } = useChatStore();
 
     const fetchConversations = useCallback(async (): Promise<void> => {
         const { data } = await api.get<ApiResponse<Conversation[]>>('/conversations');
         setConversations(data.data || []);
     }, [setConversations]);
-
+    
     const fetchMessages = useCallback(async (conversationId: string): Promise<void> => {
         const { data } = await api.get<ApiResponse<Message[]>>(
             `/conversations/${conversationId}/messages`
         );
         setMessages(conversationId, (data.data || []).reverse());
     }, [setMessages]);
+
+    const fetchUnreadCounts = useCallback(async (): Promise<void> => {
+    try {
+        const { data } = await api.get<ApiResponse<Array<{ conversationId: string; count: number }>>>('/groups/unread');
+        console.log('Unread counts response:', data);
+        if (data.data && Array.isArray(data.data)) {
+            console.log('Setting unread counts:', data.data);
+            setUnreadCounts(data.data);
+        }
+    } catch (err) {
+        console.error('Failed to fetch unread counts:', err);
+    }
+}, [setUnreadCounts]);
 
     const sendMessage = useCallback(async (
         conversationId: string,
@@ -93,6 +107,7 @@ export function useChat() {
     activeMessages,
     unreadCounts,
     fetchConversations,
+    fetchUnreadCounts,
     fetchMessages,
     sendMessage,
     createDM,
