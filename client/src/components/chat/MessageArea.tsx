@@ -4,11 +4,13 @@
  * Displays messages for the active conversation with auto-scroll
  * to bottom on new messages. Shows the chat input at the bottom.
  */
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MessageBubble } from "./MessageBubble";
 import { ChatInput } from "./ChatInput";
 import { type Message, type Conversation } from "../../types";
 import { useAuthStore } from "../../stores/authStore";
+import { getSocket } from "../../services/socket";
+import { SOCKET_EVENTS } from "../../lib/constants";
 
 interface MessageAreaProps {
   conversation: Conversation | null;
@@ -23,10 +25,47 @@ export function MessageArea({
 }: MessageAreaProps) {
   const user = useAuthStore((state) => state.user);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const [typingUser, setTypingUser] = useState<string | null>(null);
 
+  // Auto-scroll to bottom on new messages
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Listen for typing events
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket) return;
+
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    const handleTypingStart = (data: {
+      userId: string;
+      conversationId: string;
+    }) => {
+      if (
+        data.conversationId === conversation?.id &&
+        data.userId !== user?.id
+      ) {
+        const typingUserName =
+          conversation?.participants?.find((p) => p.userId === data.userId)
+            ?.user?.displayName || "Someone";
+
+        setTypingUser(typingUserName);
+
+        // Clear existing timeout to reset the 2-second window if they keep typing
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => setTypingUser(null), 2000);
+      }
+    };
+
+    socket.on(SOCKET_EVENTS.TYPING_START, handleTypingStart);
+
+    return () => {
+      socket.off(SOCKET_EVENTS.TYPING_START, handleTypingStart);
+      clearTimeout(timeoutId);
+    };
+  }, [conversation?.id, user?.id]);
 
   if (!conversation) {
     return (
@@ -46,6 +85,7 @@ export function MessageArea({
 
   return (
     <div className="flex-1 flex flex-col min-h-0">
+      {/* Header */}
       <div
         className="px-6 py-4 border-b flex items-center gap-3"
         style={{ borderColor: "var(--color-border, #2a2a2e)" }}
@@ -66,6 +106,7 @@ export function MessageArea({
         </div>
       </div>
 
+      {/* Messages Feed */}
       <div className="flex-1 overflow-y-auto px-6 py-4">
         {messages.length === 0 ? (
           <p
@@ -97,7 +138,20 @@ export function MessageArea({
         <div ref={bottomRef} />
       </div>
 
-      <ChatInput onSend={onSendMessage} />
+      {/* Typing Indicator */}
+      {typingUser && (
+        <div className="px-6 py-1 animate-pulse">
+          <p
+            className="text-xs italic"
+            style={{ color: "var(--color-text-secondary)" }}
+          >
+            {typingUser} is typing...
+          </p>
+        </div>
+      )}
+
+      {/* Input Field */}
+      <ChatInput onSend={onSendMessage} conversationId={conversation.id} />
     </div>
   );
 }

@@ -4,14 +4,21 @@
  * Message input bar with send button. Handles Enter to send
  * and Shift+Enter for new lines. Empty messages are prevented.
  */
-import { useState, type KeyboardEvent } from "react";
+import { useState, type KeyboardEvent, type ChangeEvent } from "react";
+import { getSocket } from "../../services/socket";
+import { SOCKET_EVENTS } from "../../lib/constants";
 
 interface ChatInputProps {
   onSend: (content: string) => void;
   disabled?: boolean;
+  conversationId: string; // Added prop
 }
 
-export function ChatInput({ onSend, disabled }: ChatInputProps) {
+export function ChatInput({
+  onSend,
+  disabled,
+  conversationId,
+}: ChatInputProps) {
   const [message, setMessage] = useState("");
 
   function handleSend() {
@@ -29,6 +36,11 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
     }
   }
 
+  function handleChange(e: ChangeEvent<HTMLTextAreaElement>) {
+    setMessage(e.target.value);
+    getSocket()?.emit(SOCKET_EVENTS.TYPING_START, { conversationId });
+  }
+
   return (
     <div
       className="p-4 border-t flex items-end gap-3"
@@ -36,7 +48,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
     >
       <textarea
         value={message}
-        onChange={(e) => setMessage(e.target.value)}
+        onChange={handleChange}
         onKeyDown={handleKeyDown}
         placeholder="Type a message..."
         disabled={disabled}
