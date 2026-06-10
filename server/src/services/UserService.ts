@@ -53,4 +53,26 @@ export class UserService {
             lastSeenAt: user.lastSeenAt,
         };
     }
+
+
+    async getPublicProfile(userId: string): Promise<{
+    id: string;
+    email: string;
+    displayName: string;
+    avatarUrl: string | null;
+    isOnline: boolean;
+    lastSeenAt: Date | null;
+}> {
+    const user = await this.userRepository.findByIdOrFail(userId);
+
+    return {
+        id: user.id,
+        email: user.email,
+        displayName: user.displayName,
+        avatarUrl: user.avatarUrl,
+        isOnline: user.isOnline,
+        lastSeenAt: user.lastSeenAt,
+    };
+}
+
 }

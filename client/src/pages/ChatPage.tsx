@@ -27,6 +27,7 @@ export function ChatPage() {
   const { conversationId } = useParams<{ conversationId?: string }>();
   const { logout } = useAuth();
   const { joinConversation, leaveConversation } = useSocket();
+  const currentUser = useAuthStore((state) => state.user);
 
   const {
     conversations,
@@ -60,9 +61,6 @@ export function ChatPage() {
     selectConversation(conversationId);
     joinConversation(conversationId);
   }, [conversationId, conversations]); // eslint-disable-line react-hooks/exhaustive-deps
-  // Note: selectConversation and joinConversation are intentionally omitted
-  // from deps — they are stable references and including them would cause
-  // this effect to re-run and re-emit join:conversation on every render.
 
   // ── Conversation selection (manual click) ─────────────────────────────
   function handleSelectConversation(id: string) {
@@ -113,19 +111,31 @@ export function ChatPage() {
               : activeConversation.name
             : "Nebula Chat"}
         </span>
-        <button
-          onClick={() => {
-            logout();
-            navigate(ROUTES.LOGIN, { replace: true });
-          }}
-          className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-150"
-          style={{
-            backgroundColor: "var(--color-bg-elevated, #1e1e21)",
-            color: "var(--color-text-secondary)",
-          }}
-        >
-          Logout
-        </button>
+
+        {/* Updated Actions Section */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate("/profile")}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-opacity hover:opacity-80"
+            style={{ backgroundColor: "var(--color-accent)", color: "white" }}
+            title="My Profile"
+          >
+            {currentUser?.displayName?.charAt(0).toUpperCase() || "?"}
+          </button>
+          <button
+            onClick={() => {
+              logout();
+              navigate(ROUTES.LOGIN, { replace: true });
+            }}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-150"
+            style={{
+              backgroundColor: "var(--color-bg-elevated, #1e1e21)",
+              color: "var(--color-text-secondary)",
+            }}
+          >
+            Logout
+          </button>
+        </div>
       </div>
 
       <MessageArea

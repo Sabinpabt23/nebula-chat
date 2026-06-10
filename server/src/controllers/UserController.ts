@@ -66,4 +66,11 @@ export class UserController {
 
     ResponseUtil.success(res, status, 'User status retrieved');
 };
+
+getUserProfile = async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+    const id = req.params.id as string;
+    const profile = await this.userService.getPublicProfile(id);
+    ResponseUtil.success(res, profile, 'User profile retrieved');
+};
+
 }

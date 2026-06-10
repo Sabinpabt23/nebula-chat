@@ -55,4 +55,9 @@ router.get('/:id/status', (req, res, next) => {
     return userController.getUserStatus(req, res, next);
 });
 
+router.get('/:id', (req, res, next) => {
+    userController.getUserProfile(req, res, next);
+});
+
+
 export default router;

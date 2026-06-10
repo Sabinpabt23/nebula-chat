@@ -13,6 +13,7 @@ import { LoginPage } from "./pages/LoginPage";
 import { ChatPage } from "./pages/ChatPage";
 import { ROUTES } from "./lib/constants";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+import { ProfilePage } from "./pages/ProfilePage";
 
 export default function App() {
   return (
@@ -34,6 +35,15 @@ export default function App() {
         element={
           <ProtectedRoute>
             <ChatPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/profile/:userId?"
+        element={
+          <ProtectedRoute>
+            <ProfilePage />
           </ProtectedRoute>
         }
       />
