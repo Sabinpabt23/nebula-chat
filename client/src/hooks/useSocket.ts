@@ -55,7 +55,6 @@ export function useSocket() {
         // On reconnect, re-join the active conversation room so messages
         // keep arriving without requiring a manual page reload.
         function onReconnect() {
-            console.log('[Socket] Reconnected — re-joining active room');
             if (activeRoomRef.current) {
                 socket.emit('join:conversation', {
                     conversationId: activeRoomRef.current,
