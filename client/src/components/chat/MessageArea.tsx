@@ -52,8 +52,6 @@ export function MessageArea({
             ?.user?.displayName || "Someone";
 
         setTypingUser(typingUserName);
-
-        // Clear existing timeout to reset the 2-second window if they keep typing
         clearTimeout(timeoutId);
         timeoutId = setTimeout(() => setTypingUser(null), 2000);
       }
@@ -69,88 +67,131 @@ export function MessageArea({
 
   if (!conversation) {
     return (
-      <div className="flex-1 flex items-center justify-center">
-        <p className="text-sm" style={{ color: "var(--color-text-secondary)" }}>
-          Select a conversation to start chatting.
-        </p>
+      <div className="flex-1 flex flex-col items-center justify-center gap-4 px-6">
+        <div
+          className="w-16 h-16 rounded-3xl flex items-center justify-center"
+          style={{ backgroundColor: "var(--color-bg-elevated)" }}
+        >
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <path
+              d="M5 14a9 9 0 1 1 4.5 7.79L5 23l1.21-4A8.97 8.97 0 0 1 5 14Z"
+              stroke="var(--color-text-tertiary)"
+              strokeWidth="1.5"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M10 14h8M10 10h5"
+              stroke="var(--color-text-tertiary)"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+          </svg>
+        </div>
+        <div className="text-center">
+          <p
+            className="text-base font-semibold mb-1"
+            style={{ color: "var(--color-text-secondary)" }}
+          >
+            Pick up where you left off
+          </p>
+          <p
+            className="text-sm"
+            style={{ color: "var(--color-text-tertiary)" }}
+          >
+            Select a conversation from the sidebar
+          </p>
+        </div>
       </div>
     );
   }
 
-  const name =
-    conversation.type === "DIRECT"
-      ? conversation.participants?.find((p) => p.userId !== user?.id)?.user
-          ?.displayName || "Unknown"
-      : conversation.name || "Group";
-
   return (
-    <div className="flex-1 flex flex-col min-h-0">
-      {/* Header */}
-      <div
-        className="px-6 py-4 border-b flex items-center gap-3"
-        style={{ borderColor: "var(--color-border, #2a2a2e)" }}
-      >
-        <div
-          className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0"
-          style={{ backgroundColor: "var(--color-accent)", color: "white" }}
-        >
-          {name.charAt(0).toUpperCase()}
-        </div>
-        <div>
-          <p
-            className="text-sm font-semibold"
-            style={{ color: "var(--color-text-primary)" }}
-          >
-            {name}
-          </p>
-        </div>
-      </div>
-
-      {/* Messages Feed */}
-      <div className="flex-1 overflow-y-auto px-6 py-4">
+    <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+      {/* Messages feed */}
+      <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4">
         {messages.length === 0 ? (
-          <p
-            className="text-sm text-center mt-8"
-            style={{ color: "var(--color-text-secondary)" }}
-          >
-            No messages yet. Say hello!
-          </p>
+          <div className="flex flex-col items-center justify-center h-full gap-3 pb-8">
+            <div
+              className="w-12 h-12 rounded-2xl flex items-center justify-center"
+              style={{ backgroundColor: "var(--color-bg-elevated)" }}
+            >
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                <path
+                  d="M4 11a7 7 0 1 1 3.5 6.06L4 18l.94-3.5A6.97 6.97 0 0 1 4 11Z"
+                  stroke="var(--color-text-tertiary)"
+                  strokeWidth="1.5"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+            <div className="text-center">
+              <p
+                className="text-sm font-medium mb-0.5"
+                style={{ color: "var(--color-text-secondary)" }}
+              >
+                Start the conversation
+              </p>
+              <p
+                className="text-xs"
+                style={{ color: "var(--color-text-tertiary)" }}
+              >
+                Say something — messages are end-to-end private
+              </p>
+            </div>
+          </div>
         ) : (
-          messages.map((msg, index) => {
-            const isOwn = msg.senderId === user?.id;
-            const prevMsg = index > 0 ? messages[index - 1] : null;
-            const showSender =
-              conversation.type === "GROUP" &&
-              !isOwn &&
-              msg.senderId !== prevMsg?.senderId;
+          <div className="flex flex-col gap-0.5">
+            {messages.map((msg, index) => {
+              const isOwn = msg.senderId === user?.id;
+              const prevMsg = index > 0 ? messages[index - 1] : null;
+              const showSender =
+                conversation.type === "GROUP" &&
+                !isOwn &&
+                msg.senderId !== prevMsg?.senderId;
 
-            return (
-              <MessageBubble
-                key={msg.id}
-                message={msg}
-                isOwn={isOwn}
-                showSender={showSender}
-                sender={msg.sender}
-              />
-            );
-          })
+              return (
+                <MessageBubble
+                  key={msg.id}
+                  message={msg}
+                  isOwn={isOwn}
+                  showSender={showSender}
+                  sender={msg.sender}
+                />
+              );
+            })}
+          </div>
         )}
         <div ref={bottomRef} />
       </div>
 
-      {/* Typing Indicator */}
+      {/* Typing indicator */}
       {typingUser && (
-        <div className="px-6 py-1 animate-pulse">
-          <p
-            className="text-xs italic"
-            style={{ color: "var(--color-text-secondary)" }}
-          >
-            {typingUser} is typing...
-          </p>
+        <div className="px-4 sm:px-6 pb-1 flex-shrink-0">
+          <div className="flex items-center gap-2">
+            <div className="flex gap-0.5 items-center">
+              {[0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="w-1.5 h-1.5 rounded-full animate-bounce"
+                  style={{
+                    backgroundColor: "var(--color-text-tertiary)",
+                    animationDelay: `${i * 0.15}s`,
+                    animationDuration: "0.8s",
+                  }}
+                />
+              ))}
+            </div>
+            <p
+              className="text-xs"
+              style={{ color: "var(--color-text-tertiary)" }}
+            >
+              {typingUser} is typing
+            </p>
+          </div>
         </div>
       )}
 
-      {/* Input Field */}
+      {/* Input */}
       <ChatInput onSend={onSendMessage} conversationId={conversation.id} />
     </div>
   );

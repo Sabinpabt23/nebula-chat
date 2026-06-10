@@ -40,7 +40,6 @@ export function ProfilePage() {
         setLoading(false);
       }
     }
-
     fetchProfile();
   }, [userId, isOwnProfile]);
 
@@ -64,101 +63,170 @@ export function ProfilePage() {
   if (error || !profile) {
     return (
       <div
-        className="min-h-screen flex items-center justify-center"
+        className="min-h-screen flex items-center justify-center px-4"
         style={{ backgroundColor: "var(--color-bg-base)" }}
       >
-        <p className="text-sm" style={{ color: "var(--color-danger)" }}>
-          {error || "Profile not found"}
-        </p>
+        <div className="text-center">
+          <p className="text-sm mb-4" style={{ color: "var(--color-danger)" }}>
+            {error || "Profile not found"}
+          </p>
+          <button
+            onClick={() => navigate(-1)}
+            className="text-sm transition-colors hover:opacity-80"
+            style={{ color: "var(--color-accent)" }}
+          >
+            ← Go back
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center px-4"
-      style={{ backgroundColor: "var(--color-bg-base)" }}
+      className="min-h-screen flex items-center justify-center px-4 py-12"
+      style={{
+        backgroundColor: "var(--color-bg-base)",
+        backgroundImage:
+          "radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99,102,241,0.06) 0%, transparent 60%)",
+      }}
     >
       <div
-        className="w-full max-w-sm rounded-2xl p-8"
-        style={{ backgroundColor: "var(--color-bg-surface)" }}
+        className="w-full max-w-sm rounded-2xl overflow-hidden"
+        style={{
+          backgroundColor: "var(--color-bg-surface)",
+          border: "1px solid var(--color-border)",
+        }}
       >
-        <button
-          onClick={() => navigate(-1)}
-          className="text-sm mb-6 transition-colors duration-150"
-          style={{ color: "var(--color-text-secondary)" }}
-        >
-          ← Back
-        </button>
+        {/* Top accent bar */}
+        <div
+          className="h-1 w-full"
+          style={{ backgroundColor: "var(--color-accent)" }}
+        />
 
-        <div className="flex flex-col items-center">
-          <div
-            className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-semibold mb-4 relative"
-            style={{ backgroundColor: "var(--color-accent)", color: "white" }}
-          >
-            {profile.displayName.charAt(0).toUpperCase()}
-            {profile.isOnline && (
-              <div
-                className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full border-2"
-                style={{
-                  backgroundColor: "var(--color-online)",
-                  borderColor: "var(--color-bg-surface)",
-                }}
-              />
-            )}
-          </div>
-
-          <h2
-            className="text-lg font-semibold mb-1"
-            style={{ color: "var(--color-text-primary)" }}
-          >
-            {profile.displayName}
-          </h2>
-          <p
-            className="text-sm mb-4"
+        <div className="p-7">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-1.5 text-xs mb-7 transition-colors hover:opacity-80"
             style={{ color: "var(--color-text-secondary)" }}
           >
-            {profile.email}
-          </p>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path
+                d="M8 2L4 6l4 4"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            Back
+          </button>
 
-          <div
-            className="w-full border-t pt-4"
-            style={{ borderColor: "var(--color-border)" }}
-          >
-            <div className="flex items-center justify-between py-2">
-              <span
-                className="text-sm"
-                style={{ color: "var(--color-text-secondary)" }}
-              >
-                Status
-              </span>
-              <span
-                className="text-sm font-medium"
+          <div className="flex flex-col items-center">
+            {/* Avatar */}
+            <div className="relative mb-4">
+              <div
+                className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold"
                 style={{
-                  color: profile.isOnline
+                  backgroundColor: "var(--color-accent)",
+                  color: "white",
+                }}
+              >
+                {profile.displayName.charAt(0).toUpperCase()}
+              </div>
+              {profile.isOnline && (
+                <div
+                  className="absolute bottom-0.5 right-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center"
+                  style={{
+                    backgroundColor: "var(--color-online)",
+                    borderColor: "var(--color-bg-surface)",
+                  }}
+                />
+              )}
+            </div>
+
+            <h2
+              className="text-lg font-semibold mb-0.5"
+              style={{ color: "var(--color-text-primary)" }}
+            >
+              {profile.displayName}
+            </h2>
+            <p
+              className="text-sm mb-1"
+              style={{ color: "var(--color-text-secondary)" }}
+            >
+              {profile.email}
+            </p>
+
+            {/* Online badge */}
+            <div
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium mt-1 mb-6"
+              style={{
+                backgroundColor: profile.isOnline
+                  ? "rgba(34, 197, 94, 0.12)"
+                  : "var(--color-bg-elevated)",
+                color: profile.isOnline
+                  ? "var(--color-online)"
+                  : "var(--color-text-tertiary)",
+              }}
+            >
+              <div
+                className="w-1.5 h-1.5 rounded-full"
+                style={{
+                  backgroundColor: profile.isOnline
                     ? "var(--color-online)"
                     : "var(--color-text-tertiary)",
                 }}
-              >
-                {profile.isOnline ? "Online" : "Offline"}
-              </span>
+              />
+              {profile.isOnline ? "Online now" : "Offline"}
             </div>
-            {profile.lastSeenAt && (
-              <div className="flex items-center justify-between py-2">
-                <span
-                  className="text-sm"
-                  style={{ color: "var(--color-text-secondary)" }}
+
+            {/* Info rows */}
+            <div
+              className="w-full rounded-xl overflow-hidden"
+              style={{ backgroundColor: "var(--color-bg-elevated)" }}
+            >
+              {isOwnProfile && (
+                <div
+                  className="flex items-center justify-between px-4 py-3"
+                  style={{ borderBottom: "1px solid var(--color-border)" }}
                 >
-                  Last seen
-                </span>
-                <span
-                  className="text-sm"
-                  style={{ color: "var(--color-text-primary)" }}
-                >
-                  {new Date(profile.lastSeenAt).toLocaleString()}
-                </span>
-              </div>
-            )}
+                  <span
+                    className="text-xs font-medium"
+                    style={{ color: "var(--color-text-tertiary)" }}
+                  >
+                    Account
+                  </span>
+                  <span
+                    className="text-xs font-medium"
+                    style={{ color: "var(--color-accent)" }}
+                  >
+                    My Profile
+                  </span>
+                </div>
+              )}
+              {profile.lastSeenAt && (
+                <div className="flex items-center justify-between px-4 py-3">
+                  <span
+                    className="text-xs"
+                    style={{ color: "var(--color-text-secondary)" }}
+                  >
+                    Last seen
+                  </span>
+                  <span
+                    className="text-xs"
+                    style={{ color: "var(--color-text-primary)" }}
+                  >
+                    {new Date(profile.lastSeenAt).toLocaleString([], {
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

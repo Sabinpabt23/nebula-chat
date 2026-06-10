@@ -4,14 +4,14 @@
  * Message input bar with send button. Handles Enter to send
  * and Shift+Enter for new lines. Empty messages are prevented.
  */
-import { useState, type KeyboardEvent, type ChangeEvent } from "react";
+import { useState, useRef, type KeyboardEvent, type ChangeEvent } from "react";
 import { getSocket } from "../../services/socket";
 import { SOCKET_EVENTS } from "../../lib/constants";
 
 interface ChatInputProps {
   onSend: (content: string) => void;
   disabled?: boolean;
-  conversationId: string; // Added prop
+  conversationId: string;
 }
 
 export function ChatInput({
@@ -20,12 +20,23 @@ export function ChatInput({
   conversationId,
 }: ChatInputProps) {
   const [message, setMessage] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  function autoResize() {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
+  }
 
   function handleSend() {
     const trimmed = message.trim();
     if (trimmed && !disabled) {
       onSend(trimmed);
       setMessage("");
+      if (textareaRef.current) {
+        textareaRef.current.style.height = "auto";
+      }
     }
   }
 
@@ -38,39 +49,66 @@ export function ChatInput({
 
   function handleChange(e: ChangeEvent<HTMLTextAreaElement>) {
     setMessage(e.target.value);
+    autoResize();
     getSocket()?.emit(SOCKET_EVENTS.TYPING_START, { conversationId });
   }
 
+  const canSend = message.trim().length > 0 && !disabled;
+
   return (
     <div
-      className="p-4 border-t flex items-end gap-3"
-      style={{ borderColor: "var(--color-border, #2a2a2e)" }}
+      className="px-4 py-3 flex-shrink-0"
+      style={{ borderTop: "1px solid var(--color-border)" }}
     >
-      <textarea
-        value={message}
-        onChange={handleChange}
-        onKeyDown={handleKeyDown}
-        placeholder="Type a message..."
-        disabled={disabled}
-        rows={1}
-        className="flex-1 resize-none rounded-xl px-4 py-3 text-sm outline-none transition-colors duration-150 placeholder:text-[var(--color-text-tertiary)] disabled:opacity-50"
+      <div
+        className="flex items-end gap-2 rounded-2xl px-3 py-2 transition-colors duration-150"
         style={{
-          backgroundColor: "var(--color-bg-elevated, #1e1e21)",
-          color: "var(--color-text-primary)",
-          maxHeight: "120px",
-        }}
-      />
-      <button
-        onClick={handleSend}
-        disabled={disabled || !message.trim()}
-        className="px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
-        style={{
-          backgroundColor: "var(--color-accent)",
-          color: "white",
+          backgroundColor: "var(--color-bg-elevated)",
+          border: "1px solid var(--color-border)",
         }}
       >
-        Send
-      </button>
+        <textarea
+          ref={textareaRef}
+          value={message}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          placeholder="Message..."
+          disabled={disabled}
+          rows={1}
+          className="flex-1 resize-none bg-transparent text-sm outline-none placeholder:text-[var(--color-text-tertiary)] disabled:opacity-50 py-0.5"
+          style={{
+            color: "var(--color-text-primary)",
+            maxHeight: "120px",
+            lineHeight: "1.5",
+          }}
+        />
+        <button
+          onClick={handleSend}
+          disabled={!canSend}
+          className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-150 disabled:opacity-30"
+          style={{
+            backgroundColor: canSend ? "var(--color-accent)" : "transparent",
+            color: canSend ? "white" : "var(--color-text-tertiary)",
+          }}
+          aria-label="Send message"
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path
+              d="M12.5 1.5L6.5 7.5M12.5 1.5L8.5 12.5L6.5 7.5M12.5 1.5L1.5 5.5L6.5 7.5"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      </div>
+      <p
+        className="text-[10px] text-center mt-1.5"
+        style={{ color: "var(--color-text-tertiary)" }}
+      >
+        Enter to send · Shift+Enter for new line
+      </p>
     </div>
   );
 }

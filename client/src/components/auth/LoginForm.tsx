@@ -73,7 +73,6 @@ export function LoginForm() {
     setError("");
     try {
       await verifyOtp(email.trim().toLowerCase(), code.trim());
-      // Navigation is handled by the parent route / auth guard
     } catch (err: unknown) {
       const message =
         (err as any)?.response?.data?.message || "Invalid or expired code.";
@@ -106,9 +105,12 @@ export function LoginForm() {
     <div className="w-full max-w-sm">
       {/* Wordmark */}
       <div className="mb-8">
-        <div className="flex items-center gap-2 mb-1">
-          <div className="w-7 h-7 rounded-lg bg-[var(--color-accent)] flex items-center justify-center">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <div className="flex items-center gap-2.5 mb-3">
+          <div
+            className="w-8 h-8 rounded-xl flex items-center justify-center"
+            style={{ backgroundColor: "var(--color-accent)" }}
+          >
+            <svg width="15" height="15" viewBox="0 0 14 14" fill="none">
               <circle cx="4" cy="7" r="2" fill="white" />
               <circle cx="10" cy="4" r="1.5" fill="white" opacity="0.7" />
               <circle cx="10" cy="10" r="1.5" fill="white" opacity="0.7" />
@@ -133,32 +135,35 @@ export function LoginForm() {
             </svg>
           </div>
           <span
-            className="text-[var(--color-text-primary)] font-semibold tracking-tight"
-            style={{ fontSize: "17px" }}
+            className="font-semibold tracking-tight"
+            style={{ fontSize: "18px", color: "var(--color-text-primary)" }}
           >
             Nebula Chat
           </span>
         </div>
-        <p className="text-[var(--color-text-secondary)] text-sm mt-3">
-          Sign in to your account to continue.
+        <p className="text-sm" style={{ color: "var(--color-text-secondary)" }}>
+          Sign in to continue your conversations.
         </p>
       </div>
 
       {/* Card */}
       <div
-        className="rounded-xl border border-[var(--color-border)] p-6"
-        style={{ backgroundColor: "var(--color-bg-surface)" }}
+        className="rounded-2xl p-6"
+        style={{
+          backgroundColor: "var(--color-bg-surface)",
+          border: "1px solid var(--color-border)",
+        }}
       >
         {/* Tabs */}
         <div
-          className="flex rounded-lg p-0.5 mb-6"
+          className="flex rounded-xl p-0.5 mb-5"
           style={{ backgroundColor: "var(--color-bg-elevated)" }}
         >
           {(["email", "google"] as Tab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => handleTabChange(tab)}
-              className="flex-1 py-1.5 text-sm rounded-md font-medium transition-all duration-150"
+              className="flex-1 py-1.5 text-sm rounded-lg font-medium transition-all duration-150"
               style={{
                 backgroundColor:
                   activeTab === tab ? "var(--color-bg-surface)" : "transparent",
@@ -179,8 +184,7 @@ export function LoginForm() {
 
         {/* Email/OTP flow */}
         {activeTab === "email" && (
-          <div className="flex flex-col gap-3">
-            {/* Email input — always visible */}
+          <div className="flex flex-col gap-3.5">
             <div className="flex flex-col gap-1.5">
               <label
                 htmlFor="email"
@@ -203,17 +207,19 @@ export function LoginForm() {
                 onKeyDown={(e) =>
                   otpStep === "email" && handleKeyDown(e, handleSendOtp)
                 }
-                className="w-full px-3 py-2 rounded-lg text-sm outline-none transition-all duration-150
+                className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none transition-all duration-150
                   placeholder:text-[var(--color-text-tertiary)]
                   text-[var(--color-text-primary)]
-                  border border-[var(--color-border)]
+                  border
                   focus:border-[var(--color-accent)]
-                  disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ backgroundColor: "var(--color-bg-elevated)" }}
+                  disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{
+                  backgroundColor: "var(--color-bg-elevated)",
+                  borderColor: "var(--color-border)",
+                }}
               />
             </div>
 
-            {/* OTP input — appears after code is sent */}
             {otpStep === "code" && (
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between">
@@ -230,7 +236,7 @@ export function LoginForm() {
                       setCode("");
                       setError("");
                     }}
-                    className="text-xs transition-colors duration-150"
+                    className="text-xs transition-colors duration-150 hover:opacity-80"
                     style={{ color: "var(--color-accent)" }}
                   >
                     Change email
@@ -241,7 +247,7 @@ export function LoginForm() {
                   type="text"
                   inputMode="numeric"
                   autoComplete="one-time-code"
-                  placeholder="Enter 6-digit code"
+                  placeholder="000000"
                   value={code}
                   autoFocus
                   onChange={(e) => {
@@ -249,13 +255,16 @@ export function LoginForm() {
                     clearError();
                   }}
                   onKeyDown={(e) => handleKeyDown(e, handleVerifyOtp)}
-                  className="w-full px-3 py-2 rounded-lg text-sm outline-none transition-all duration-150
-                    tracking-[0.2em] font-mono
+                  className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none transition-all duration-150
+                    tracking-[0.3em] font-mono text-center
                     placeholder:text-[var(--color-text-tertiary)] placeholder:tracking-normal placeholder:font-sans
                     text-[var(--color-text-primary)]
-                    border border-[var(--color-border)]
+                    border
                     focus:border-[var(--color-accent)]"
-                  style={{ backgroundColor: "var(--color-bg-elevated)" }}
+                  style={{
+                    backgroundColor: "var(--color-bg-elevated)",
+                    borderColor: "var(--color-border)",
+                  }}
                 />
                 <p
                   className="text-xs"
@@ -266,21 +275,40 @@ export function LoginForm() {
               </div>
             )}
 
-            {/* Error message */}
             {error && activeTab === "email" && (
-              <p className="text-xs" style={{ color: "var(--color-danger)" }}>
+              <div
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs"
+                style={{
+                  backgroundColor: "var(--color-danger-subtle)",
+                  color: "var(--color-danger)",
+                }}
+              >
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <circle
+                    cx="6"
+                    cy="6"
+                    r="5"
+                    stroke="currentColor"
+                    strokeWidth="1.2"
+                  />
+                  <path
+                    d="M6 3.5v3M6 8v.5"
+                    stroke="currentColor"
+                    strokeWidth="1.2"
+                    strokeLinecap="round"
+                  />
+                </svg>
                 {error}
-              </p>
+              </div>
             )}
 
-            {/* Primary action button */}
             {otpStep === "email" ? (
               <button
                 onClick={handleSendOtp}
                 disabled={isSending}
-                className="w-full py-2 rounded-lg text-sm font-medium mt-1
+                className="w-full py-2.5 rounded-xl text-sm font-medium mt-0.5
                   transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed
-                  flex items-center justify-center gap-2"
+                  flex items-center justify-center gap-2 hover:opacity-90"
                 style={{
                   backgroundColor: "var(--color-accent)",
                   color: "white",
@@ -289,7 +317,7 @@ export function LoginForm() {
                 {isSending ? (
                   <>
                     <Spinner />
-                    Sending code…
+                    Sending…
                   </>
                 ) : (
                   "Send code"
@@ -299,9 +327,9 @@ export function LoginForm() {
               <button
                 onClick={handleVerifyOtp}
                 disabled={isVerifying}
-                className="w-full py-2 rounded-lg text-sm font-medium mt-1
+                className="w-full py-2.5 rounded-xl text-sm font-medium mt-0.5
                   transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed
-                  flex items-center justify-center gap-2"
+                  flex items-center justify-center gap-2 hover:opacity-90"
                 style={{
                   backgroundColor: "var(--color-accent)",
                   color: "white",
@@ -313,7 +341,7 @@ export function LoginForm() {
                     Verifying…
                   </>
                 ) : (
-                  "Verify & sign in"
+                  "Sign in"
                 )}
               </button>
             )}
@@ -322,33 +350,51 @@ export function LoginForm() {
 
         {/* Google flow */}
         {activeTab === "google" && (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3.5">
             <p
-              className="text-sm text-center"
+              className="text-sm text-center leading-relaxed"
               style={{ color: "var(--color-text-secondary)" }}
             >
-              Sign in with your Google account. No password needed.
+              Sign in with Google — no password required.
             </p>
 
             {error && activeTab === "google" && (
-              <p
-                className="text-xs text-center"
-                style={{ color: "var(--color-danger)" }}
+              <div
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs"
+                style={{
+                  backgroundColor: "var(--color-danger-subtle)",
+                  color: "var(--color-danger)",
+                }}
               >
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <circle
+                    cx="6"
+                    cy="6"
+                    r="5"
+                    stroke="currentColor"
+                    strokeWidth="1.2"
+                  />
+                  <path
+                    d="M6 3.5v3M6 8v.5"
+                    stroke="currentColor"
+                    strokeWidth="1.2"
+                    strokeLinecap="round"
+                  />
+                </svg>
                 {error}
-              </p>
+              </div>
             )}
 
             <button
               onClick={handleGoogleLogin}
               disabled={isGoogleLoading}
-              className="w-full py-2 rounded-lg text-sm font-medium mt-1
+              className="w-full py-2.5 rounded-xl text-sm font-medium
                 transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed
-                flex items-center justify-center gap-2.5
-                border border-[var(--color-border)]"
+                flex items-center justify-center gap-2.5 hover:opacity-90"
               style={{
                 backgroundColor: "var(--color-bg-elevated)",
                 color: "var(--color-text-primary)",
+                border: "1px solid var(--color-border)",
               }}
             >
               {isGoogleLoading ? (
@@ -359,7 +405,7 @@ export function LoginForm() {
               ) : (
                 <>
                   <GoogleIcon />
-                  Sign in with Google
+                  Continue with Google
                 </>
               )}
             </button>
@@ -367,18 +413,20 @@ export function LoginForm() {
         )}
       </div>
 
-      {/* Footer note */}
       <p
         className="text-center text-xs mt-5"
         style={{ color: "var(--color-text-tertiary)" }}
       >
-        By signing in you agree to our terms of service.
+        By signing in you agree to our{" "}
+        <span style={{ color: "var(--color-text-secondary)" }}>
+          terms of service
+        </span>
+        .
       </p>
     </div>
   );
 }
 
-/** Inline spinner — 14px, inherits current color */
 function Spinner() {
   return (
     <svg
@@ -407,7 +455,6 @@ function Spinner() {
   );
 }
 
-/** Google 'G' logo — minimal SVG, no external dependency */
 function GoogleIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">

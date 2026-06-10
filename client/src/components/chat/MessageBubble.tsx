@@ -26,32 +26,34 @@ export function MessageBubble({
   });
 
   return (
-    <div className={`flex ${isOwn ? "justify-end" : "justify-start"} mb-1`}>
-      <div className={`max-w-[70%] ${isOwn ? "items-end" : "items-start"}`}>
+    <div className={`flex mb-1 ${isOwn ? "justify-end" : "justify-start"}`}>
+      <div
+        className={`flex flex-col max-w-[72%] sm:max-w-[65%] ${isOwn ? "items-end" : "items-start"}`}
+      >
         {showSender && sender && (
           <p
-            className="text-xs mb-1 px-1"
-            style={{ color: "var(--color-text-secondary)" }}
+            className="text-[11px] font-medium mb-1 px-1"
+            style={{ color: "var(--color-accent)" }}
           >
             {sender.displayName}
           </p>
         )}
         <div
-          className="rounded-2xl px-4 py-2 text-sm leading-relaxed break-words"
+          className="px-3.5 py-2 text-sm leading-relaxed break-words"
           style={{
             backgroundColor: isOwn
               ? "var(--color-accent)"
-              : "var(--color-bg-elevated, #1e1e21)",
+              : "var(--color-bg-elevated)",
             color: isOwn ? "white" : "var(--color-text-primary)",
-            borderBottomRightRadius: isOwn ? "4px" : "16px",
-            borderBottomLeftRadius: isOwn ? "16px" : "4px",
+            borderRadius: isOwn ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
+            wordBreak: "break-word",
           }}
         >
-          <p>{message.content}</p>
+          {message.content}
         </div>
         <p
-          className="text-xs mt-0.5 px-1"
-          style={{ color: "var(--color-text-tertiary, #55555f)" }}
+          className="text-[10px] mt-1 px-1"
+          style={{ color: "var(--color-text-tertiary)" }}
         >
           {time}
         </p>

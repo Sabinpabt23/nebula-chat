@@ -26,8 +26,14 @@ export function LoginPage() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center px-4"
-      style={{ backgroundColor: "var(--color-bg-base)" }}
+      className="min-h-screen flex items-center justify-center px-4 py-12"
+      style={{
+        backgroundColor: "var(--color-bg-base)",
+        backgroundImage: `
+          radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99,102,241,0.08) 0%, transparent 60%),
+          radial-gradient(ellipse 60% 40% at 80% 100%, rgba(99,102,241,0.04) 0%, transparent 50%)
+        `,
+      }}
     >
       <LoginForm />
     </div>
