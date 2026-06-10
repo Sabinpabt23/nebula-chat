@@ -1,11 +1,9 @@
 /**
  * Conversation Service
- * 
- * Business logic for conversation management.
+ * * Business logic for conversation management.
  * Handles creation of direct and group conversations,
  * participant management, and conversation listing.
- * 
- * Rules:
+ * * Rules:
  * - Direct conversations are unique per user pair (no duplicates)
  * - Group conversations require at least 2 members + creator
  * - Only admins can add/remove members from groups
@@ -83,6 +81,7 @@ export class ConversationService {
         return conversation;
     }
 
+    // Updated to conditionally reactivate returning members or add brand new ones
     async addMembers(
         conversationId: string,
         currentUserId: string,
@@ -101,11 +100,21 @@ export class ConversationService {
             throw new ForbiddenException('Only admins can add members');
         }
 
-        await this.participantRepository.addMultipleParticipants(
-            conversationId,
-            memberIds,
-            currentUserId
-        );
+        for (const userId of memberIds) {
+            const existing = await this.participantRepository.findAnyParticipant(conversationId, userId);
+            
+            if (existing && existing.leftAt) {
+                // Reactivate member who previously left or was removed
+                await this.participantRepository.reactivateParticipant(conversationId, userId);
+            } else if (!existing) {
+                // Fallback implementation using primitive add if multi-batch isn't strictly needed for individual items
+                await this.participantRepository.addMultipleParticipants(
+                    conversationId,
+                    [userId],
+                    currentUserId
+                );
+            }
+        }
     }
 
     async removeMember(

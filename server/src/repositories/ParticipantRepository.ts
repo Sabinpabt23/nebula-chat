@@ -38,6 +38,19 @@ export class ParticipantRepository {
         await this.participantRepository.save(participants);
     }
 
+    async findAnyParticipant(conversationId: string, userId: string): Promise<Participant | null> {
+    return this.participantRepository.findOne({
+        where: { conversationId, userId },
+    });
+}
+
+async reactivateParticipant(conversationId: string, userId: string): Promise<void> {
+    await this.participantRepository.update(
+        { conversationId, userId },
+        { leftAt: null, joinedAt: new Date() }
+    );
+}
+
     async removeParticipant(conversationId: string, userId: string): Promise<void> {
         await this.participantRepository.update(
             { conversationId, userId },
