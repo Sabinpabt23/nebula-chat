@@ -34,8 +34,9 @@ export function ConversationList({
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
+      {/* UPDATED: Changed px-4 to pl-4 pr-14 md:px-4 to make room for AppShell's close button on mobile */}
       <div
-        className="px-4 py-4 flex items-center justify-between flex-shrink-0"
+        className="pl-4 pr-14 py-4 md:px-4 flex items-center justify-between flex-shrink-0"
         style={{ borderBottom: "1px solid var(--color-border)" }}
       >
         <div className="flex items-center gap-2">

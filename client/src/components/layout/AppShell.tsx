@@ -49,8 +49,9 @@ export function AppShell({ sidebar, children }: AppShellProps) {
         }}
       >
         {/* Close button inside sidebar on mobile */}
+        {/* UPDATED: Changed right-3 to right-4 to align with sidebar padding */}
         <button
-          className="md:hidden absolute top-4 right-3 z-10 w-7 h-7 flex items-center justify-center rounded-lg transition-colors"
+          className="md:hidden absolute top-4 right-4 z-10 w-7 h-7 flex items-center justify-center rounded-lg transition-colors"
           style={{
             color: "var(--color-text-secondary)",
             backgroundColor: "var(--color-bg-elevated)",
