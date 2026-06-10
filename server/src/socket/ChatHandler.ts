@@ -50,13 +50,14 @@ export class ChatHandler {
         });
     }
 
-    private handleTyping(socket: Socket): void {
-        socket.on(SOCKET_EVENTS.TYPING_START, (data: { conversationId: string }) => {
-            socket.to(`conversation:${data.conversationId}`).emit(SOCKET_EVENTS.TYPING_START, {
-                userId: socket.data.userId,
-                conversationId: data.conversationId,
-            });
+   private handleTyping(socket: Socket): void {
+    socket.on(SOCKET_EVENTS.TYPING_START, (data: { conversationId: string }) => {
+        console.log('Typing:', socket.data.userId, 'in', data.conversationId);
+        socket.to(`conversation:${data.conversationId}`).emit(SOCKET_EVENTS.TYPING_START, {
+            userId: socket.data.userId,
+            conversationId: data.conversationId,
         });
+    });
 
         socket.on(SOCKET_EVENTS.TYPING_STOP, (data: { conversationId: string }) => {
             socket.to(`conversation:${data.conversationId}`).emit(SOCKET_EVENTS.TYPING_STOP, {
