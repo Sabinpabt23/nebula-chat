@@ -7,11 +7,12 @@
  * On mount, restores session from refresh cookie before fetching data.
  * Active conversation is stored in the URL for persistence across refreshes.
  */
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AppShell } from "../components/layout/AppShell";
 import { ConversationList } from "../components/chat/ConversationList";
 import { MessageArea } from "../components/chat/MessageArea";
+import { GroupInfoModal } from "../components/chat/GroupInfoModal";
 import { useChat } from "../hooks/useChat";
 import { useAuth } from "../hooks/useAuth";
 import { useAuthStore } from "../stores/authStore";
@@ -28,6 +29,9 @@ export function ChatPage() {
   const { logout } = useAuth();
   const { joinConversation, leaveConversation } = useSocket();
   const currentUser = useAuthStore((state) => state.user);
+
+  // Group Info Modal Toggle State
+  const [showGroupInfo, setShowGroupInfo] = useState(false);
 
   const {
     conversations,
@@ -72,6 +76,13 @@ export function ChatPage() {
     joinConversation(id);
   }
 
+  // Handle Header Click for Groups
+  function handleHeaderClick() {
+    if (activeConversation?.type === "GROUP") {
+      setShowGroupInfo(true);
+    }
+  }
+
   return (
     <AppShell
       sidebar={
@@ -100,8 +111,13 @@ export function ChatPage() {
         style={{ borderColor: "var(--color-border, #2a2a2e)" }}
       >
         <span
-          className="text-sm font-medium"
+          className={`text-sm font-medium ${
+            activeConversation?.type === "GROUP"
+              ? "cursor-pointer hover:opacity-80"
+              : ""
+          }`}
           style={{ color: "var(--color-text-primary)" }}
+          onClick={handleHeaderClick}
         >
           {activeConversation
             ? activeConversation.type === "DIRECT"
@@ -147,6 +163,15 @@ export function ChatPage() {
           }
         }}
       />
+
+      {/* Group Details Modal overlay */}
+      {showGroupInfo && activeConversation && (
+        <GroupInfoModal
+          conversation={activeConversation}
+          onClose={() => setShowGroupInfo(false)}
+          onMemberRemoved={() => fetchConversations()}
+        />
+      )}
     </AppShell>
   );
 }
