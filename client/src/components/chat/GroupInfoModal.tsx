@@ -4,9 +4,9 @@
  * Shows group details — member list, add members, remove members.
  * Only visible for GROUP conversations. Admin can manage members.
  */
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import api from "../../services/api";
-import { type ApiResponse, type Conversation, type User } from "../../types";
+import { type Conversation } from "../../types";
 import { useAuthStore } from "../../stores/authStore";
 import { getErrorMessage } from "../../lib/errors";
 
@@ -22,38 +22,22 @@ export function GroupInfoModal({
   onMemberRemoved,
 }: GroupInfoModalProps) {
   const currentUser = useAuthStore((state) => state.user);
-  const [members, setMembers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const isAdmin =
     conversation.participants?.find((p) => p.userId === currentUser?.id)
       ?.role === "ADMIN";
 
-  useEffect(() => {
-    fetchMembers();
-  }, []);
-
-  async function fetchMembers() {
-    try {
-      const { data } = await api.get<ApiResponse<Conversation>>(
-        `/conversations/${conversation.id}`,
-      );
-      setMembers(
-        data.data?.participants?.map((p) => p.user!).filter(Boolean) || [],
-      );
-    } catch (err) {
-      setError(getErrorMessage(err, "Failed to load members"));
-    } finally {
-      setLoading(false);
-    }
-  }
+  // Derive active members directly from the conversation prop
+  const members = (conversation.participants || [])
+    .filter((p) => !p.leftAt)
+    .map((p) => p.user!)
+    .filter(Boolean);
 
   async function handleRemoveMember(userId: string) {
     try {
       await api.delete(`/conversations/${conversation.id}/members/${userId}`);
-      setMembers((prev) => prev.filter((m) => m.id !== userId));
-      onMemberRemoved();
+      onMemberRemoved(); // Triggers the parent hook to re-fetch updated conversation state
     } catch (err) {
       setError(getErrorMessage(err, "Failed to remove member"));
     }
@@ -83,57 +67,50 @@ export function GroupInfoModal({
           </p>
         )}
 
-        {loading ? (
+        <div className="max-h-64 overflow-y-auto">
           <p
-            className="text-sm"
+            className="text-xs font-medium mb-2"
             style={{ color: "var(--color-text-secondary)" }}
           >
-            Loading...
+            Members ({members.length})
           </p>
-        ) : (
-          <div className="max-h-64 overflow-y-auto">
-            <p
-              className="text-xs font-medium mb-2"
-              style={{ color: "var(--color-text-secondary)" }}
+
+          {members.map((member) => (
+            <div
+              key={member.id}
+              className="flex items-center justify-between py-2"
             >
-              Members ({members.length})
-            </p>
-            {members.map((member) => (
-              <div
-                key={member.id}
-                className="flex items-center justify-between py-2"
-              >
-                <div className="flex items-center gap-2">
-                  <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium"
-                    style={{
-                      backgroundColor: "var(--color-accent)",
-                      color: "white",
-                    }}
-                  >
-                    {member.displayName.charAt(0).toUpperCase()}
-                  </div>
-                  <span
-                    className="text-sm"
-                    style={{ color: "var(--color-text-primary)" }}
-                  >
-                    {member.displayName}
-                    {member.id === currentUser?.id ? " (You)" : ""}
-                  </span>
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium"
+                  style={{
+                    backgroundColor: "var(--color-accent)",
+                    color: "white",
+                  }}
+                >
+                  {member.displayName.charAt(0).toUpperCase()}
                 </div>
-                {isAdmin && member.id !== currentUser?.id && (
-                  <button
-                    onClick={() => handleRemoveMember(member.id)}
-                    className="text-xs transition-colors hover:opacity-80"
-                    style={{ color: "var(--color-danger)" }}
-                  >
-                    Remove
-                  </button>
-                )}
+                <span
+                  className="text-sm"
+                  style={{ color: "var(--color-text-primary)" }}
+                >
+                  {member.displayName}
+                  {member.id === currentUser?.id ? " (You)" : ""}
+                </span>
               </div>
-            ))}
-          </div>
-        )}
+
+              {isAdmin && member.id !== currentUser?.id && (
+                <button
+                  onClick={() => handleRemoveMember(member.id)}
+                  className="text-xs transition-colors hover:opacity-80"
+                  style={{ color: "var(--color-danger)" }}
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
 
         <button
           onClick={onClose}
