@@ -37,6 +37,7 @@ export function ChatPage() {
     activeMessages,
     unreadCounts,
     fetchConversations,
+    fetchUnreadCounts,
     selectConversation,
     sendMessage,
     createDM,
@@ -46,8 +47,9 @@ export function ChatPage() {
   useEffect(() => {
     if (isAuthenticated) {
       fetchConversations();
+      fetchUnreadCounts();
     }
-  }, [isAuthenticated, fetchConversations]);
+  }, [isAuthenticated, fetchConversations, fetchUnreadCounts]);
 
   useEffect(() => {
     if (!conversationId || conversations.length === 0) return;
