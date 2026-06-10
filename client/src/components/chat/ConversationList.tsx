@@ -7,6 +7,7 @@
  */
 import { type Conversation } from "../../types";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { NewChatModal } from "./NewChatModal";
 
 interface ConversationListProps {
@@ -72,6 +73,12 @@ export function ConversationList({
                     ?.user?.displayName || "Unknown"
                 : conv.name || "Group";
 
+            // Extract online calculation so it can be cleanly shared or kept tidy
+            const otherUser = conv.participants?.find(
+              (p) => p.userId !== currentUserId,
+            )?.user;
+            const isOnline = otherUser?.isOnline;
+
             return (
               <button
                 key={conv.id}
@@ -83,32 +90,46 @@ export function ConversationList({
                     : "transparent",
                 }}
               >
-                <div className="relative flex-shrink-0">
-                  <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium"
-                    style={{
-                      backgroundColor: "var(--color-accent)",
-                      color: "white",
-                    }}
+                {/* Conditionally Render Link for DIRECT, or Div for GROUP */}
+                {conv.type === "DIRECT" ? (
+                  <Link
+                    to={`/profile/${conv.participants?.find((p) => p.userId !== currentUserId)?.userId}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="relative flex-shrink-0"
                   >
-                    {name.charAt(0).toUpperCase()}
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-opacity hover:opacity-80"
+                      style={{
+                        backgroundColor: "var(--color-accent)",
+                        color: "white",
+                      }}
+                    >
+                      {name.charAt(0).toUpperCase()}
+                    </div>
+                    {isOnline && (
+                      <div
+                        className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2"
+                        style={{
+                          backgroundColor: "var(--color-online, #22c55e)",
+                          borderColor: "var(--color-bg-surface)",
+                        }}
+                      />
+                    )}
+                  </Link>
+                ) : (
+                  <div className="relative flex-shrink-0">
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium"
+                      style={{
+                        backgroundColor: "var(--color-accent)",
+                        color: "white",
+                      }}
+                    >
+                      {name.charAt(0).toUpperCase()}
+                    </div>
                   </div>
-                  {conv.type === "DIRECT" &&
-                    (() => {
-                      const otherUser = conv.participants?.find(
-                        (p) => p.userId !== currentUserId,
-                      )?.user;
-                      return otherUser?.isOnline ? (
-                        <div
-                          className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2"
-                          style={{
-                            backgroundColor: "var(--color-online, #22c55e)",
-                            borderColor: "var(--color-bg-surface)",
-                          }}
-                        />
-                      ) : null;
-                    })()}
-                </div>
+                )}
+
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <span
