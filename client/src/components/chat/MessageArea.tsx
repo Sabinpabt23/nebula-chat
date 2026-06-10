@@ -11,6 +11,7 @@ import { type Message, type Conversation } from "../../types";
 import { useAuthStore } from "../../stores/authStore";
 import { getSocket } from "../../services/socket";
 import { SOCKET_EVENTS } from "../../lib/constants";
+import api from "../../services/api";
 
 interface MessageAreaProps {
   conversation: Conversation | null;
@@ -31,6 +32,15 @@ export function MessageArea({
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    if (messages.length > 0 && conversation && user) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.senderId !== user.id) {
+        api.post(`/messages/${lastMessage.id}/read`).catch(() => {});
+      }
+    }
+  }, [messages, conversation, user]);
 
   // Listen for typing events
   useEffect(() => {
