@@ -64,6 +64,7 @@ export class SocketManager {
         const chatHandler = new ChatHandler(messageService);
         chatHandler.register(this.io);
     }
+    
 
     static getInstance(server?: HttpServer): SocketManager {
         if (!SocketManager.instance && server) {
