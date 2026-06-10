@@ -6,7 +6,7 @@
  */
 import { useState } from "react";
 import api from "../../services/api";
-import { type Conversation } from "../../types";
+import { type ApiResponse, type Conversation, type User } from "../../types";
 import { useAuthStore } from "../../stores/authStore";
 import { getErrorMessage } from "../../lib/errors";
 
@@ -14,15 +14,23 @@ interface GroupInfoModalProps {
   conversation: Conversation;
   onClose: () => void;
   onMemberRemoved: () => void;
+  onMemberAdded: () => void; // New prop to sync parent data on additions
 }
 
 export function GroupInfoModal({
   conversation,
   onClose,
   onMemberRemoved,
+  onMemberAdded,
 }: GroupInfoModalProps) {
   const currentUser = useAuthStore((state) => state.user);
   const [error, setError] = useState("");
+
+  // Inline search states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<User[]>([]);
+  const [adding, setAdding] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
 
   const isAdmin =
     conversation.participants?.find((p) => p.userId === currentUser?.id)
@@ -34,10 +42,45 @@ export function GroupInfoModal({
     .map((p) => p.user!)
     .filter(Boolean);
 
+  async function handleSearch(query: string) {
+    setSearchQuery(query);
+    if (query.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    try {
+      const { data } = await api.get<ApiResponse<User[]>>(
+        `/users/search?query=${encodeURIComponent(query)}`,
+      );
+      // Filter out users who are already members of this group
+      setSearchResults(
+        (data.data || []).filter((u) => !members.find((m) => m.id === u.id)),
+      );
+    } catch {
+      // Fail silently or handle gracefully for background searching
+    }
+  }
+
+  async function handleAddMember(userId: string) {
+    setAdding(true);
+    try {
+      await api.post(`/conversations/${conversation.id}/members`, {
+        memberIds: [userId],
+      });
+
+      setSearchResults((prev) => prev.filter((u) => u.id !== userId));
+      onMemberAdded(); // Triggers parent hook to refresh conversation data down
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to add member"));
+    } finally {
+      setAdding(false);
+    }
+  }
+
   async function handleRemoveMember(userId: string) {
     try {
       await api.delete(`/conversations/${conversation.id}/members/${userId}`);
-      onMemberRemoved(); // Triggers the parent hook to re-fetch updated conversation state
+      onMemberRemoved();
     } catch (err) {
       setError(getErrorMessage(err, "Failed to remove member"));
     }
@@ -111,6 +154,78 @@ export function GroupInfoModal({
             </div>
           ))}
         </div>
+
+        {/* Inline Search & Add Section for Admin */}
+        {isAdmin && (
+          <div
+            className="mt-4 pt-4 border-t"
+            style={{ borderColor: "var(--color-border)" }}
+          >
+            {!showSearch ? (
+              <button
+                onClick={() => setShowSearch(true)}
+                className="w-full py-2 rounded-xl text-sm font-medium transition-colors hover:opacity-90"
+                style={{
+                  backgroundColor: "var(--color-accent)",
+                  color: "white",
+                }}
+              >
+                + Add Member
+              </button>
+            ) : (
+              <div>
+                <input
+                  type="text"
+                  placeholder="Search users..."
+                  value={searchQuery}
+                  autoFocus
+                  onChange={(e) => handleSearch(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl text-sm outline-none mb-2"
+                  style={{
+                    backgroundColor: "var(--color-bg-elevated)",
+                    color: "var(--color-text-primary)",
+                  }}
+                />
+
+                <div className="max-h-32 overflow-y-auto">
+                  {searchResults.map((user) => (
+                    <div
+                      key={user.id}
+                      className="flex items-center justify-between py-2"
+                    >
+                      <span
+                        className="text-sm"
+                        style={{ color: "var(--color-text-primary)" }}
+                      >
+                        {user.displayName}
+                      </span>
+                      <button
+                        onClick={() => handleAddMember(user.id)}
+                        disabled={adding}
+                        className="text-xs font-medium transition-colors hover:opacity-80 disabled:opacity-50"
+                        style={{ color: "var(--color-accent)" }}
+                      >
+                        Add
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => {
+                    setShowSearch(false);
+                    setSearchQuery("");
+                    setSearchResults([]);
+                  }}
+                  className="text-xs mt-2 transition-colors hover:opacity-80"
+                  style={{ color: "var(--color-text-secondary)" }}
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         <button
           onClick={onClose}

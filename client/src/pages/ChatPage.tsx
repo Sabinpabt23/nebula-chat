@@ -170,6 +170,7 @@ export function ChatPage() {
           conversation={activeConversation}
           onClose={() => setShowGroupInfo(false)}
           onMemberRemoved={() => fetchConversations()}
+          onMemberAdded={() => fetchConversations()} // <-- Hook up the new callback here
         />
       )}
     </AppShell>
