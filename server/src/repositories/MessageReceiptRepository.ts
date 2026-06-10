@@ -48,7 +48,7 @@ export class MessageReceiptRepository {
         .leftJoin('receipt.message', 'message')
         .where('message.conversationId = :conversationId', { conversationId })
         .andWhere('message.senderId != :userId', { userId })
-        .andWhere('(receipt.id IS NULL OR receipt.readAt IS NULL)');
+        .andWhere('(receipt.messageId IS NULL OR receipt.readAt IS NULL)');
 
     if (lastReadMessageId) {
         query.andWhere('message.id > :lastReadMessageId', { lastReadMessageId });
