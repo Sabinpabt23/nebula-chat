@@ -58,12 +58,6 @@ export function useChat() {
             { content, messageType }
         );
 
-        // Emit the socket event so the server knows to broadcast.
-        getSocket()?.emit(SOCKET_EVENTS.MESSAGE_SEND, {
-            conversationId,
-            content,
-            messageType,
-        });
     }, []);
 
 
