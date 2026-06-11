@@ -12,17 +12,6 @@ import routes from './routes/index';
 import { SocketManager } from './socket/SocketManager';
 import { createServer } from 'http';
 
-// DEBUG: Check if Render is passing environment variables
-console.log('ENV CHECK:', {
-    hasDatabaseUrl: !!process.env.DATABASE_URL,
-    hasJwtSecret: !!process.env.JWT_ACCESS_SECRET,
-    nodeEnv: process.env.NODE_ENV,
-    port: process.env.PORT,
-    envKeys: Object.keys(process.env).filter(k => 
-        k.startsWith('DATABASE') || k.startsWith('JWT') || k === 'NODE_ENV' || k === 'PORT'
-    ),
-});
-
 class App {
     public app: Application;
     private port: number;
