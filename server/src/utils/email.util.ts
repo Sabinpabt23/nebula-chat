@@ -1,36 +1,16 @@
-/**
- * Email Utility
- * 
- * Handles transactional email delivery via nodemailer.
- * Uses MailHog (no auth) in development, real SMTP with credentials in production.
- * The transporter is configured once on startup; auth is skipped when credentials are empty.
- */
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import { env } from '../config/env.config';
 import { logger } from './logger.util';
 
 class EmailUtil {
-    private transporter: nodemailer.Transporter;
+    private resend: Resend;
 
     constructor() {
-        const config: any = {
-            host: env.email.host,
-            port: env.email.port,
-            secure: env.email.port === 465,
-        };
-
-        if (env.email.user && env.email.pass) {
-            config.auth = {
-                user: env.email.user,
-                pass: env.email.pass,
-            };
-        }
-
-        this.transporter = nodemailer.createTransport(config);
+        this.resend = new Resend(env.email.pass);
     }
 
     async sendOtpEmail(email: string, otp: string): Promise<void> {
-        const mailOptions = {
+        await this.resend.emails.send({
             from: env.email.from,
             to: email,
             subject: 'Your Nebula Chat Login Code',
@@ -44,9 +24,7 @@ class EmailUtil {
                     <p style="color: #71717a; font-size: 14px;">This code expires in 10 minutes. If you didn't request this, you can safely ignore this email.</p>
                 </div>
             `,
-        };
-
-        await this.transporter.sendMail(mailOptions);
+        });
         logger.info(`OTP email sent to ${email}`);
     }
 }

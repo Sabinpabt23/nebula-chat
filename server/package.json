@@ -13,7 +13,12 @@
     "migration:run": "npm run typeorm migration:run -- -d src/config/database.config.ts",
     "migration:revert": "npm run typeorm migration:revert -- -d src/config/database.config.ts"
   },
-  "keywords": ["chat", "realtime", "socket.io", "typescript"],
+  "keywords": [
+    "chat",
+    "realtime",
+    "socket.io",
+    "typescript"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -23,7 +28,6 @@
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.9.2",
-    "@types/nodemailer": "^8.0.0",
     "@types/passport": "^1.0.17",
     "@types/passport-google-oauth20": "^2.0.17",
     "bcryptjs": "^3.0.3",
@@ -41,6 +45,7 @@
     "passport-google-oauth20": "^2.0.0",
     "pg": "^8.21.0",
     "reflect-metadata": "^0.2.2",
+    "resend": "^6.12.4",
     "socket.io": "^4.8.3",
     "typeorm": "^1.0.0",
     "winston": "^3.19.0",
