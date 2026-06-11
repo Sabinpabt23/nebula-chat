@@ -11,7 +11,7 @@ export const AppDataSource = new DataSource({
     type: 'postgres',
     url: env.database.url,
     ssl: env.database.ssl ? { rejectUnauthorized: false } : false,
-    synchronize: true,
+    synchronize: false,
     logging: env.nodeEnv === 'development' ? ['error', 'warn'] : ['error'],
     entities: env.nodeEnv === 'production'
         ? ['dist/entities/**/*.js']
