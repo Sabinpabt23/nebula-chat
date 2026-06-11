@@ -3,10 +3,6 @@
  * @module config/env
  */
 
-import dotenv from 'dotenv';
-
-dotenv.config();
-
 interface EnvConfig {
     nodeEnv: string;
     port: number;
