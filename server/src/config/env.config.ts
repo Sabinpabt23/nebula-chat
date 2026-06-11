@@ -1,29 +1,12 @@
 /**
  * @fileoverview Centralized Environment Configuration Module
  * @module config/env
- * * @description
- * This module is the single source of truth for application configuration. It loads 
- * raw strings from `process.env` (via dotenv), parses them into proper types (numbers, booleans),
- * and structures them into a strongly-typed, immutable `env` object.
- * * @fail_fast_policy
- * To prevent the application from running in a partially configured or unstable state,
- * this file will intentionally throw a runtime error during the application boot phase 
- * if any required environment variable is missing.
- * * @developer_guide
- * When adding a new environment variable:
- * 1. Add its key and expected type to the `EnvConfig` interface.
- * 2. Map it in the `env` export using `getEnvVar('KEY_NAME', isRequired)`.
- * 3. Remember to update the root `.env.example` file for the team.
  */
 
 import dotenv from 'dotenv';
 
-// Load .env file into process.env at runtime
 dotenv.config();
 
-/**
- * Structural contract for the application's configuration layout.
- */
 interface EnvConfig {
     nodeEnv: string;
     port: number;
@@ -68,65 +51,50 @@ interface EnvConfig {
     logLevel: string;
 }
 
-/**
- * Helper utility to extract variables from process.env with integrated validation.
- * * @param {string} key - The exact name of the environment variable.
- * @param {boolean} [required=true] - If true, missing variables will halt application execution.
- * @throws {Error} If `required` is true and the variable is missing/empty.
- * @returns {string} The resolved environment value or an empty string.
- */
-function getEnvVar(key: string, required = true): string {
-    const value = process.env[key];
-    if (!value && required) {
-        throw new Error(`Missing required environment variable: ${key}`);
-    }
-    return value || '';
+function getEnvVar(key: string, defaultValue: string = ''): string {
+    return process.env[key] || defaultValue;
 }
 
-/**
- * Frozen, type-safe application configuration instance.
- * Consumed globally across the codebase instead of direct `process.env` lookups.
- */
 export const env: EnvConfig = {
-    nodeEnv: getEnvVar('NODE_ENV', false) || 'development',
-    port: parseInt(getEnvVar('PORT', false) || '4000', 10),
+    nodeEnv: getEnvVar('NODE_ENV', 'development'),
+    port: parseInt(getEnvVar('PORT', '4000'), 10),
     database: {
         url: getEnvVar('DATABASE_URL'),
-        ssl: getEnvVar('DATABASE_SSL') === 'true',
+        ssl: getEnvVar('DATABASE_SSL', 'true') === 'true',
     },
     redis: {
         url: getEnvVar('REDIS_URL'),
-        token: getEnvVar('REDIS_TOKEN', false) || undefined,
+        token: getEnvVar('REDIS_TOKEN') || undefined,
     },
     jwt: {
-        accessSecret: getEnvVar('JWT_ACCESS_SECRET'),
-        refreshSecret: getEnvVar('JWT_REFRESH_SECRET'),
-        accessExpiry: getEnvVar('JWT_ACCESS_EXPIRY', false) || '15m',
-        refreshExpiry: getEnvVar('JWT_REFRESH_EXPIRY', false) || '7d',
+        accessSecret: getEnvVar('JWT_ACCESS_SECRET', 'dev-secret'),
+        refreshSecret: getEnvVar('JWT_REFRESH_SECRET', 'dev-refresh-secret'),
+        accessExpiry: getEnvVar('JWT_ACCESS_EXPIRY', '15m'),
+        refreshExpiry: getEnvVar('JWT_REFRESH_EXPIRY', '7d'),
     },
     google: {
-        clientId: getEnvVar('GOOGLE_CLIENT_ID', false) || '',
-        clientSecret: getEnvVar('GOOGLE_CLIENT_SECRET', false) || '',
-        callbackUrl: getEnvVar('GOOGLE_CALLBACK_URL', false) || '',
+        clientId: getEnvVar('GOOGLE_CLIENT_ID'),
+        clientSecret: getEnvVar('GOOGLE_CLIENT_SECRET'),
+        callbackUrl: getEnvVar('GOOGLE_CALLBACK_URL'),
     },
     email: {
-        from: getEnvVar('EMAIL_FROM', false) || 'noreply@nebula-chat.com',
-        host: getEnvVar('EMAIL_HOST', false) || 'localhost',
-        port: parseInt(getEnvVar('EMAIL_PORT', false) || '1026', 10),
-        user: getEnvVar('EMAIL_USER', false) || '',
-        pass: getEnvVar('EMAIL_PASS', false) || '',
-        provider: getEnvVar('EMAIL_PROVIDER', false) || 'smtp',
+        from: getEnvVar('EMAIL_FROM', 'noreply@nebula-chat.com'),
+        host: getEnvVar('EMAIL_HOST', 'localhost'),
+        port: parseInt(getEnvVar('EMAIL_PORT', '1026'), 10),
+        user: getEnvVar('EMAIL_USER'),
+        pass: getEnvVar('EMAIL_PASS'),
+        provider: getEnvVar('EMAIL_PROVIDER', 'smtp'),
     },
     cors: {
-        origin: getEnvVar('CORS_ORIGIN', false) || 'http://localhost:5173',
+        origin: getEnvVar('CORS_ORIGIN', 'http://localhost:5173'),
     },
     cookie: {
-        domain: getEnvVar('COOKIE_DOMAIN', false) || 'localhost',
-        secure: getEnvVar('COOKIE_SECURE') === 'true',
+        domain: getEnvVar('COOKIE_DOMAIN', 'localhost'),
+        secure: getEnvVar('COOKIE_SECURE', 'false') === 'true',
     },
     rateLimit: {
-        windowMs: parseInt(getEnvVar('RATE_LIMIT_WINDOW_MS', false) || '900000', 10),
-        maxRequests: parseInt(getEnvVar('RATE_LIMIT_MAX_REQUESTS', false) || '100', 10),
+        windowMs: parseInt(getEnvVar('RATE_LIMIT_WINDOW_MS', '900000'), 10),
+        maxRequests: parseInt(getEnvVar('RATE_LIMIT_MAX_REQUESTS', '100'), 10),
     },
-    logLevel: getEnvVar('LOG_LEVEL', false) || 'info',
+    logLevel: getEnvVar('LOG_LEVEL', 'info'),
 };
