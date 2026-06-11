@@ -31,9 +31,8 @@ export class AuthController {
 
         res.cookie('refreshToken', tokens.refreshToken, {
             httpOnly: true,
-            secure: env.cookie.secure,
-            sameSite: 'strict',
-            domain: env.cookie.domain,
+            secure: true,
+            sameSite: 'none',
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
         });
 
@@ -49,9 +48,8 @@ export class AuthController {
 
         res.cookie('refreshToken', tokens.refreshToken, {
             httpOnly: true,
-            secure: env.cookie.secure,
-            sameSite: 'strict',
-            domain: env.cookie.domain,
+            secure: true,
+            sameSite: 'none',
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
@@ -73,9 +71,8 @@ export class AuthController {
 
         res.cookie('refreshToken', tokens.refreshToken, {
             httpOnly: true,
-            secure: env.cookie.secure,
-            sameSite: 'strict',
-            domain: env.cookie.domain,
+            secure: true,
+            sameSite: 'none',
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
@@ -94,9 +91,8 @@ export class AuthController {
 
         res.clearCookie('refreshToken', {
             httpOnly: true,
-            secure: env.cookie.secure,
-            sameSite: 'strict',
-            domain: env.cookie.domain,
+            secure: true,
+            sameSite: 'none',
         });
 
         ResponseUtil.success(res, null, 'Logged out successfully');
