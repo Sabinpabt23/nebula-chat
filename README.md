@@ -187,9 +187,6 @@ nebula-chat/
 │       └── validators/             # Zod schemas
 │
 ├── docker-compose.yml              # PostgreSQL + Redis + MailHog
-├── CLAUDE.md                       # Complete system blueprint
-├── STATUS.md                       # Development progress log
-├── DECISION.md                     # Architectural decision records
 └── README.md
 ```
 
@@ -329,7 +326,7 @@ Client starts at `http://localhost:5173`.
 
 | Rule | Detail |
 |---|---|
-| **Layer boundaries are sacred** | Controllers route. Services decide. Repositories query. Never cross these lines. |
+| **Layer boundaries are sacred** | Controllers route. Services decide. Repositories query. |
 | **No scattered error handling** | Throw typed `HttpException` subclasses. The global handler catches everything. |
 | **Validate at the edge** | All input validation via Zod schemas in `validators/`. |
 | **No duplication** | Shared logic lives in `utils/` only. |
