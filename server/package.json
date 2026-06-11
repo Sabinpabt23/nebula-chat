@@ -5,25 +5,27 @@
   "main": "dist/app.js",
   "scripts": {
     "dev": "nodemon --exec ts-node -r tsconfig-paths/register src/app.ts",
-    "build": "tsc",
+    "build": "tsc --skipLibCheck",
     "start": "node dist/app.js",
     "typeorm": "typeorm-ts-node-commonjs",
     "migration:generate": "npm run typeorm migration:generate -- -d src/config/database.config.ts",
     "migration:run": "npm run typeorm migration:run -- -d src/config/database.config.ts",
-    "migration:revert": "npm run typeorm migration:revert -- -d src/config/database.config.ts",
-    "lint": "eslint src/**/*.ts",
-    "lint:fix": "eslint src/**/*.ts --fix",
-    "format": "prettier --write \"src/**/*.ts\""
+    "migration:revert": "npm run typeorm migration:revert -- -d src/config/database.config.ts"
   },
-  "keywords": [
-    "chat",
-    "realtime",
-    "socket.io",
-    "typescript"
-  ],
+  "keywords": ["chat", "realtime", "socket.io", "typescript"],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^25.9.2",
+    "@types/nodemailer": "^8.0.0",
+    "@types/passport": "^1.0.17",
+    "@types/passport-google-oauth20": "^2.0.17",
+    "@types/uuid": "^10.0.0",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
@@ -46,16 +48,6 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@types/bcryptjs": "^2.4.6",
-    "@types/cookie-parser": "^1.4.10",
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.6",
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^25.9.2",
-    "@types/nodemailer": "^8.0.0",
-    "@types/passport": "^1.0.17",
-    "@types/passport-google-oauth20": "^2.0.17",
-    "@types/uuid": "^10.0.0",
     "nodemon": "^3.1.14",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0"
