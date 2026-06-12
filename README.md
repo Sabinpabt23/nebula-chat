@@ -6,7 +6,6 @@
 
 <p>
   <a href="https://nebula-chat-seven.vercel.app"><strong>🔗 Live Demo</strong></a> &nbsp;·&nbsp;
-  <a href="https://github.com/Sabinpabt23/nebula-chat"><strong>📂 GitHub</strong></a>
 </p>
 
 <br/>
